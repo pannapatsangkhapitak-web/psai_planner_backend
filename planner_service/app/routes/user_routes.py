@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from firebase_admin import auth
 
-from app.auth_utils import get_current_user
+from planner_service.app.auth_utils import get_current_user
 from planner_v2.db.firestore_db import FirestoreDB
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_mail import FastMail, MessageSchema
-from app.email_config import conf
-from app.services.email_service import send_invite_email
+from planner_service.app.email_config import conf
+from planner_service.app.services.email_service import send_invite_email
 
 router = APIRouter(tags=["User"])
 

@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth
 
 from fastapi import APIRouter, Header, HTTPException
-from app.admin_guard import verify_sys_admin
+from planner_service.app.admin_guard import verify_sys_admin
 
 from typing import List
 from pydantic import BaseModel

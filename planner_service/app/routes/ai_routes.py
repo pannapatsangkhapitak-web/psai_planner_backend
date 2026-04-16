@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 
-from app.schemas import WhatIfRequest
-from app.mapper import payload_to_task, payload_to_subtasks
+from planner_service.app.schemas import WhatIfRequest
+from planner_service.app.mapper import payload_to_task, payload_to_subtasks
 
 from planner_v2.core.ai_engine import AIEngine
 
