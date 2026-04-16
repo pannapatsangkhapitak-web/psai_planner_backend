@@ -1,0 +1,39 @@
+{
+  "TASK-b951b0": {
+    "category": "Room PPM",
+    "work_type": "WorkType.CNP",
+    "start_date": "2025-12-31",
+    "subtasks": [
+      {
+        "skill": "CARPENTER",
+        "duration": 3
+      },
+      {
+        "skill": "PAINTER",
+        "duration": 2
+      }
+    ]
+  },
+  "TASK-987360": {
+    "category": "Event",
+    "work_type": "WorkType.INV",
+    "start_date": "2026-01-27",
+    "subtasks": [
+      {
+        "skill": "PAINTER",
+        "duration": 1
+      }
+    ]
+  },
+  "TASK-ab7906": {
+    "category": "Event",
+    "work_type": "WorkType.INV",
+    "start_date": "2026-01-27",
+    "subtasks": [
+      {
+        "skill": "PAINTER",
+        "duration": 1
+      }
+    ]
+  }
+}
