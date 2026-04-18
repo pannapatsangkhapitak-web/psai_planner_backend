@@ -7,7 +7,7 @@ from planner_service.app.mapper import payload_to_task, payload_to_subtasks
 
 from planner_v2.core.ai_engine import AIEngine
 
-from firebase_admin import firestore
+# from firebase_admin import firestore
 
 router = APIRouter(tags=["AI"])
 

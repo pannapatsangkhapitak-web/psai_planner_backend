@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from firebase_admin import auth
+# from firebase_admin import auth
 
 from planner_service.app.auth_utils import get_current_user
 from planner_v2.db.firestore_db import FirestoreDB
