@@ -8,7 +8,7 @@ from typing import List
 from pydantic import BaseModel
 
 router = APIRouter()
-db = none # firestore.client()
+db = None # firestore.client()
 
 
 # =========================
