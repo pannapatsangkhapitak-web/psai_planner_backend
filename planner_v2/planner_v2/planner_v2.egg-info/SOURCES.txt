@@ -1,5 +1,0 @@
-pyproject.toml
-planner_v2.egg-info/PKG-INFO
-planner_v2.egg-info/SOURCES.txt
-planner_v2.egg-info/dependency_links.txt
-planner_v2.egg-info/top_level.txt
