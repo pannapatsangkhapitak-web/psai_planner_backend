@@ -1,6 +1,6 @@
 from datetime import date
 from planner_v2.core import Task, Skill, WorkType
-from planner_v2.core.workflow import build_subtasks
+from core.workflow import build_subtasks
 
 task = Task(
     task_id="TASK-001",

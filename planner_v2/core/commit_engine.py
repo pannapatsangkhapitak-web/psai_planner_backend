@@ -1,6 +1,6 @@
 # planner_v2/core/commit_engine.py
 
-from planner_v2.core.models import Task, SubTask
+from core.models import Task, SubTask
 
 
 class CommitEngine:

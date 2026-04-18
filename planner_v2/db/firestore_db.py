@@ -5,7 +5,7 @@ from google.cloud import firestore
 from google.oauth2 import service_account
 import pathlib
 
-from planner_v2.core.models import Task, SubTask
+from core.models import Task, SubTask
 
 
 class FirestoreDB:

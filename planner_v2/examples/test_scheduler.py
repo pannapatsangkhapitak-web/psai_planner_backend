@@ -1,7 +1,7 @@
 from datetime import date
 from planner_v2.core import Task, Skill, WorkType
-from planner_v2.core.workflow import build_subtasks
-from planner_v2.core.scheduler import schedule_task
+from core.workflow import build_subtasks
+from core.scheduler import schedule_task
 
 task = Task(
     task_id="TASK-001",
@@ -28,7 +28,7 @@ print("STATE:", task.state)
 for s in scheduled:
     print(s.skill, s.start_date, s.end_date)
 
-from planner_v2.core.scheduler import trace_log
+from core.scheduler import trace_log
 
 for e in trace_log.all_events():
     print(e)

@@ -1,7 +1,7 @@
 from datetime import date
 from planner_v2.core import Task, Skill, WorkType
-from planner_v2.core.workflow import build_subtasks
-from planner_v2.core.whatif import WhatIfEngine
+from core.workflow import build_subtasks
+from core.whatif import WhatIfEngine
 
 task = Task(
     task_id="TASK-002",
