@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-# from planner_v2.db.firestore_db import FirestoreDB
+from planner_v2.db.firestore_db import FirestoreDB
 
 router = APIRouter(tags=["User"])
 

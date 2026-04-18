@@ -23,19 +23,14 @@ def get_config(authorization: str = Header(...)):
 
     try:
         decoded = verify_sys_admin(token)
-    except:
+    except Exception:
         decoded = {"role": "DEV", "email": "local@test"}
-        #print("🔥 DECODED TOKEN =", decoded)
 
-        return {
-            "message": "config access granted",
-            "role": decoded.get("role"),
-            "email": decoded.get("email"),
+    return {
+        "message": "config access granted",
+        "role": decoded.get("role"),
+        "email": decoded.get("email"),
         }
-
-    except Exception as e:
-        print("🔥 ERROR =", str(e))
-        raise HTTPException(status_code=403, detail=str(e))
 
 
 # =========================
