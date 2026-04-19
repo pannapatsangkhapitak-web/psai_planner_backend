@@ -12,7 +12,7 @@ if cred_json:
     initialize_app(cred)
     
 # import routes ที่มีอยู่จริง
-from planner_service.app.routes import ai_routes
+
 from planner_service.app.routes import config_routes
 from planner_service.app.routes import user_routes
 

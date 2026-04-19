@@ -15,6 +15,7 @@ router = APIRouter(tags=["AI"])
 # REQUEST MODEL
 # =========================
 class SimulateRequest(BaseModel):
+    property_id: str   # 🔥 ต้องมี
     work_type: str
     duration: Dict[str, int]  # {"CARPENTER": 2, "PAINTER": 1}
 
