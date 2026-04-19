@@ -66,7 +66,7 @@ def simulate(req: SimulateRequest):
         # =========================
         from google.cloud import firestore
 
-        db = firestore.Client()
+        db = firestore.Client(project="aras-connect-planner-v2")
 
         docs = db.collection("properties") \
             .document(req.property_id) \
