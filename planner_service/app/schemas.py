@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 class SubTaskInput(BaseModel):
+    property_id: str   # 🔥 เพิ่มบรรทัดนี้
     skill: str
     duration: int
 
