@@ -14,8 +14,9 @@ if cred_json:
 print("ENV LENGTH:", len(cred_json) if cred_json else "NONE")    
 # import routes ที่มีอยู่จริง
 
-from planner_service.app.routes import config_routes
+from planner_service.app.routes import ai_routes
 from planner_service.app.routes import user_routes
+from planner_service.app.routes import config_routes
 
 # include router
 app.include_router(ai_routes.router)
