@@ -1,7 +1,16 @@
+import os
+import json
+from firebase_admin import credentials, initialize_app
 from fastapi import FastAPI
 
 app = FastAPI()
+cred_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 
+if cred_json:
+    cred_dict = json.loads(cred_json)
+    cred = credentials.Certificate(cred_dict)
+    initialize_app(cred)
+    
 # import routes ที่มีอยู่จริง
 from planner_service.app.routes import ai_routes
 from planner_service.app.routes import config_routes
