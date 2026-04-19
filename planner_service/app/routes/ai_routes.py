@@ -65,9 +65,9 @@ def simulate(req: SimulateRequest):
             base_date=date.today()    # ใช้วันนี้เป็น default
             )
 
-        result = engine.simulate(
+        result = engine.suggest(
             task=task,
-            subtasks=subtasks,
+            subtasks=[],
             existing_tasks=[]  # 🔥 ยังไม่ต่อ DB
         )
 
