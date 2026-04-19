@@ -37,10 +37,13 @@ def check_ai():
 
     # 🔹 mock task
     task = Task(
-        id="T1",
-        work_type=WorkType.CNP,
-        start_date=None
-    )
+            task_id="T1",
+            name="Test Task",
+            category="Demo",
+            work_type=WorkType.CNP,
+            leader=Skill.CARPENTER,
+            start_date=None
+            )
 
     # 🔹 mock subtasks
     subtasks = [
