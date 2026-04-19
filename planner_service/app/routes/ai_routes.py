@@ -65,9 +65,9 @@ def simulate(req: SimulateRequest):
         # =========================
         # 🔥 ดึงข้อมูลจาก Firestore
         # =========================
-        from google.cloud import firestore
+        from firebase_admin import firestore
 
-        db = firestore.Client(project="aras-connect-planner-v2")
+        db = firestore.client()
 
         docs = db.collection("properties") \
             .document(req.property_id) \
