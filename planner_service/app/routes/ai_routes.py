@@ -60,7 +60,10 @@ def simulate(req: SimulateRequest):
             )
 
         # 🔹 run AI
-        engine = AIEngine()
+        engine = AIEngine(
+            calendar={},              # mock ก่อน
+            base_date=date.today()    # ใช้วันนี้เป็น default
+            )
 
         result = engine.simulate(
             task=task,
