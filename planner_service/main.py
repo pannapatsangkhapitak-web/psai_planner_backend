@@ -9,7 +9,7 @@ from planner_service.app.routes import user_routes
 
 # include router
 app.include_router(ai_routes.router)
-app.include_router(config_routes.router)
+app.include_router(ai_routes.router, prefix="/ai")
 app.include_router(user_routes.router)
 
 @app.get("/")
