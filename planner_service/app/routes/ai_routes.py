@@ -34,10 +34,11 @@ def to_skill(s: str) -> Skill:
 # =========================
 @router.post("/simulate")
 def simulate(req: SimulateRequest):
+
     try:
         work_type = to_work_type(req.work_type)
 
-        # 🔹 create Task
+        # create Task
         task = Task(
             task_id="SIM-1",
             name="Simulated Task",
@@ -47,7 +48,7 @@ def simulate(req: SimulateRequest):
             start_date=None,
         )
 
-        # 🔹 create SubTasks
+        # create SubTasks
         subtasks: List[SubTask] = []
         for i, (skill_name, days) in enumerate(req.duration.items()):
             subtasks.append(
@@ -59,16 +60,20 @@ def simulate(req: SimulateRequest):
                 )
             )
 
-        # 🔹 run AI
+        # ✅ Mock Calendar (ต้องมี method ข้างใน)
+        class MockCalendar:
+            def get_skill_load(self, skill, date):
+                return 0
+
+        # run AI
         engine = AIEngine(
-            calendar={},              # mock ก่อน
-            base_date=date.today()    # ใช้วันนี้เป็น default
-            )
+            calendar=MockCalendar(),
+            base_date=date.today()
+        )
 
         result = engine.suggest(
             task=task,
-            subtasks=subtasks,   # ✅ ใช้ของที่สร้างมา
-            # existing_tasks=[]  # 🔥 ยังไม่ต่อ DB
+            subtasks=subtasks
         )
 
         return {
@@ -81,11 +86,3 @@ def simulate(req: SimulateRequest):
             "status": "error",
             "message": str(e)
         }
-
-
-# =========================
-# ROUTE: HEALTH CHECK
-# =========================
-@router.get("/check")
-def check_ai():
-    return {"status": "AI route ready"}
