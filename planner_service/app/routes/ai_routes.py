@@ -68,7 +68,7 @@ def simulate(req: SimulateRequest):
         result = engine.suggest(
             task=task,
             subtasks=[],
-            existing_tasks=[]  # 🔥 ยังไม่ต่อ DB
+            # existing_tasks=[]  # 🔥 ยังไม่ต่อ DB
         )
 
         return {
