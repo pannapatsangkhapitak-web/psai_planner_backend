@@ -81,7 +81,8 @@ def simulate(req: SimulateRequest):
         from planner_v2.core.calendar_adapter import CalendarAdapter
 
         calendar = CalendarAdapter(committed_docs)
-
+        print("REQ:", req)
+        print("HAS PROPERTY:", hasattr(req, "property_id"))
         # =========================
         # run AI
         # =========================
