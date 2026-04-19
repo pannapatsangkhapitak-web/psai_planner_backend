@@ -1,7 +1,8 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Dict, List
 from datetime import date
 
-# 🔹 internal imports
 from planner_v2.core.ai_engine import AIEngine
 from planner_v2.core.models import Task, SubTask
 from planner_v2.core.enums import WorkType, Skill
@@ -10,67 +11,78 @@ router = APIRouter(tags=["AI"])
 
 
 # =========================
-# TEMP: FIXED MTPD (NO DB)
+# REQUEST MODEL
 # =========================
-def get_mtpd(hotel_id: str) -> int:
-    return 2  # 🔥 mock value
+class SimulateRequest(BaseModel):
+    work_type: str
+    duration: Dict[str, int]  # {"CARPENTER": 2, "PAINTER": 1}
 
 
 # =========================
-# TEMP: FAKE CALENDAR
+# HELPER: convert string → Enum
 # =========================
-class FakeCalendar:
-    def get_skill_load(self, day, skill):
-        return 0
+def to_work_type(w: str) -> WorkType:
+    return WorkType[w]
+
+
+def to_skill(s: str) -> Skill:
+    return Skill[s]
 
 
 # =========================
-# TEST ENDPOINT
+# ROUTE: SIMULATE
 # =========================
-@router.get("/ai/check")
-def check_ai():
-    """
-    🔥 Purpose:
-    - test AI engine without DB / Firebase
-    - confirm Railway deploy is stable
-    """
+@router.post("/simulate")
+def simulate(req: SimulateRequest):
+    try:
+        work_type = to_work_type(req.work_type)
 
-    # 🔹 mock task
-    task = Task(
-            task_id="T1",
-            name="Test Task",
-            category="Demo",
-            work_type=WorkType.CNP,
-            leader=Skill.CARPENTER,
-            start_date=None
+        # 🔹 create Task
+        task = Task(
+            task_id="SIM-1",
+            name="Simulated Task",
+            category="SIM",
+            work_type=work_type,
+            leader=to_skill(list(req.duration.keys())[0]),
+            start_date=None,
+        )
+
+        # 🔹 create SubTasks
+        subtasks: List[SubTask] = []
+        for i, (skill_name, days) in enumerate(req.duration.items()):
+            subtasks.append(
+                SubTask(
+                    task_id=task.task_id,
+                    skill=to_skill(skill_name),
+                    sequence=i + 1,
+                    duration_days=days,
+                )
             )
 
-    # 🔹 mock subtasks
-    subtasks = [
-        SubTask(
-            task_id="T1",
-            skill=Skill.CARPENTER,
-            sequence=1,
-            duration_days=2
-        ),
-        SubTask(
-            task_id="T1",
-            skill=Skill.PAINTER,
-            sequence=2,
-            duration_days=1
-        ),
-    ]
+        # 🔹 run AI
+        engine = AIEngine()
 
-    # 🔹 engine
-    engine = AIEngine(
-        calendar=FakeCalendar(),
-        base_date=date.today(),
-        max_per_day=2
-    )
+        result = engine.simulate(
+            task=task,
+            subtasks=subtasks,
+            existing_tasks=[]  # 🔥 ยังไม่ต่อ DB
+        )
 
-    result = engine.suggest(task, subtasks)
+        return {
+            "status": "ok",
+            "result": result
+        }
 
-    return {
-        "status": "ok",
-        "result": result
-    }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+
+# =========================
+# ROUTE: HEALTH CHECK
+# =========================
+@router.get("/check")
+def check_ai():
+    return {"status": "AI route ready"}
