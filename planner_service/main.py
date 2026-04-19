@@ -10,7 +10,8 @@ if cred_json:
     cred_dict = json.loads(cred_json)
     cred = credentials.Certificate(cred_dict)
     initialize_app(cred)
-    
+
+print("ENV LENGTH:", len(cred_json) if cred_json else "NONE")    
 # import routes ที่มีอยู่จริง
 
 from planner_service.app.routes import config_routes
