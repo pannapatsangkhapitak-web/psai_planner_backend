@@ -2,13 +2,21 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, List
 from datetime import date
+from google.cloud import firestore
 
 from planner_v2.core.ai_engine import AIEngine
 from planner_v2.core.models import Task, SubTask
 from planner_v2.core.enums import WorkType, Skill
 
+
+
 router = APIRouter(tags=["AI"])
 
+
+docs = db.collection("tasks_committed").stream()
+
+committed_docs = [d.to_dict() for d in docs]
+calendar = CalendarAdapter(committed_docs)
 
 # =========================
 # REQUEST MODEL
@@ -60,14 +68,32 @@ def simulate(req: SimulateRequest):
                 )
             )
 
-        # ✅ Mock Calendar (ต้องมี method ข้างใน)
-        class MockCalendar:
-            def get_skill_load(self, skill, date):
-                return 0
+        # =========================
+        # 🔥 ดึงข้อมูลจาก Firestore
+        # =========================
+        from google.cloud import firestore
 
+        db = firestore.Client()
+
+        docs = db.collection("properties") \
+            .document(req.property_id) \
+            .collection("tasks_committed") \
+            .stream()
+
+        committed_docs = [d.to_dict() for d in docs]
+
+        # =========================
+        # 🔥 ใช้ CalendarAdapter
+        # =========================
+        from planner_v2.core.calendar_adapter import CalendarAdapter
+
+        calendar = CalendarAdapter(committed_docs)
+
+        # =========================
         # run AI
+        # =========================
         engine = AIEngine(
-            calendar=MockCalendar(),
+            calendar=calendar,
             base_date=date.today()
         )
 
