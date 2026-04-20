@@ -1,6 +1,6 @@
 # planner_v2/core/commit_engine.py
 
-from core.models import Task, SubTask
+from planner_v2.core.models import Task, SubTask
 
 
 class CommitEngine:
@@ -9,7 +9,6 @@ class CommitEngine:
         self.ai = ai
         self.db = firestore
 
-    # ✅ ต้องอยู่ใน class
     def apply_commit(
         self,
         task: Task,
@@ -19,49 +18,39 @@ class CommitEngine:
         use_ai: bool,
     ):
         # --------------------------------------------
-        # 1) Run AI scheduling (single source of truth)
+        # 1) Validate timeline (must be provided)
         # --------------------------------------------
-        result = self.ai.suggest(task, subtasks)
-
-        if not result.get("feasible"):
-            return {
-                "success": False,
-                "reason": result.get("reason", "COMMIT_FAILED"),
-            }
+        for st in subtasks:
+            if not st.start_date or not st.end_date:
+                return {
+                    "success": False,
+                    "reason": "INVALID_TIMELINE"
+                }
 
         # --------------------------------------------
-        # 2) Ensure SubTasks ordered by execution
-        # (important for multi-skill chain)
+        # 2) Ensure execution order (multi-skill chain)
         # --------------------------------------------
         subtasks_sorted = sorted(subtasks, key=lambda st: st.sequence)
 
         # --------------------------------------------
-        # 3) Normalize timeline from SubTasks
+        # 3) Build timeline (from USER, not AI)
         # --------------------------------------------
         timeline = []
 
         for st in subtasks_sorted:
-
-            # AI must populate these fields
-            if not st.start_date or not st.end_date:
-                continue
-
             timeline.append({
-                "skill": st.skill.name,             # "PAINTER"
-                "start": st.start_date.isoformat(), # "2026-03-13"
+                "skill": st.skill.name,
+                "start": st.start_date.isoformat(),
                 "end": st.end_date.isoformat(),
             })
 
-        if not timeline:
-            return {
-                "success": False,
-                "reason": "AI_TIMELINE_EMPTY",
-            }
-
-        committed_start = timeline[0]["start"]
-
         # --------------------------------------------
-        # 4) Persist to Firestore
+        # 4) Determine committed start date
+        # --------------------------------------------
+        committed_start = timeline[0]["start"]  # ต้องมาจาก timeline เท่านั้น
+        
+        # --------------------------------------------
+        # 5) Persist to Firestore
         # --------------------------------------------
         task_id = self.db.commit_chain(
             task=task,
@@ -69,9 +58,12 @@ class CommitEngine:
             actor=actor_uid,
         )
 
+        # --------------------------------------------
+        # 6) Return result
+        # --------------------------------------------
         return {
-            "success": True,
-            "task_id": task_id,
-            "committed_start": committed_start,
-            "timeline": timeline,
+                "success": True,
+                "task_id": task_id,
+                "committed_start": committed_start,  # 🔥 ตรงนี้
+                "timeline": timeline,
         }

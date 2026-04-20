@@ -1,5 +1,5 @@
-from core.models import SubTask, Skill
-from core.enums import WorkType
+from planner_v2.core.models import SubTask, Skill
+from planner_v2.core.enums import WorkType
 
 # =========================================================
 # WORK TYPE → SKILL CHAIN DEFINITION (MULTI-SKILL ONLY)
