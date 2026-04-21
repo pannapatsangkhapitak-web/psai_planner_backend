@@ -1,10 +1,9 @@
 # planner_v2/db/firestore_db.py
+from google.cloud import firestore
 
 class FirestoreDB:
     def __init__(self):
-        print("🔥 Firestore DISABLED (dev mode)")
-        self._data = {}
-
+        self.db = firestore.Client()
     # =========================
     # GET USER
     # =========================
@@ -53,17 +52,13 @@ class FirestoreDB:
     # =========================
     
     def list_committed(self):
-        return self._data.get("committed_tasks", [])
-    
+        docs = self.db.collection("tasks").stream()
+        return [doc.to_dict() for doc in docs]
+
     def commit_chain(self, task, subtasks, actor):
-        """
-        DEV MODE: store committed task in memory
-        """
+        doc_ref = self.db.collection("tasks").document(task.task_id)
 
-        if "committed_tasks" not in self._data:
-            self._data["committed_tasks"] = []
-
-        record = {
+        doc_ref.set({
             "task_id": task.task_id,
             "name": task.name,
             "category": task.category,
@@ -71,14 +66,12 @@ class FirestoreDB:
             "actor": actor,
             "subtasks": [
                 {
-                "skill": st.skill.name,
-                "start": st.start_date.isoformat(),
-                "end": st.end_date.isoformat(),
+                    "skill": st.skill.name,
+                    "start": st.start_date.isoformat(),
+                    "end": st.end_date.isoformat(),
                 }
-            for st in subtasks
-        ]
-        }
-
-        self._data["committed_tasks"].append(record)
+                for st in subtasks
+            ]
+        })
 
         return task.task_id
