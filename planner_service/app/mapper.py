@@ -7,12 +7,13 @@ def payload_to_task(req):
 def payload_to_subtasks(task, durations_by_skill):
     subtasks = []
 
-    for skill, days in durations_by_skill.items():
+    for idx, (skill, duration) in enumerate(durations_by_skill.items()):
         subtasks.append(
             SubTask(
                 task_id=task.task_id,
                 skill=Skill[skill],
-                duration=days
+                sequence=idx + 1,
+                duration_days=duration,
             )
         )
 
