@@ -8,7 +8,9 @@ from google.oauth2 import service_account
 # 🔐 INIT FIRESTORE (REAL)
 # =========================
 
-cred = service_account.Credentials.from_service_account_file("key.json")
+key_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+
+cred = service_account.Credentials.from_service_account_info(key_dict)
 
 db = firestore.Client(
     credentials=cred,
