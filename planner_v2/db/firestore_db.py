@@ -1,56 +1,64 @@
 # planner_v2/db/firestore_db.py
+# planner_v2/db/firestore_db.py
+
 from google.cloud import firestore
+from google.oauth2 import service_account
+
+# =========================
+# 🔐 INIT FIRESTORE (REAL)
+# =========================
+
+cred = service_account.Credentials.from_service_account_file("key.json")
+
+db = firestore.Client(
+    credentials=cred,
+    project=cred.project_id,
+)
+
+
+# =========================
+# 🔥 FIRESTORE DB CLASS
+# =========================
 
 class FirestoreDB:
     def __init__(self):
-        self.db = firestore.Client()
+        self.db = db  # ✅ ใช้ instance ที่มี credential แล้ว
+
     # =========================
-    # GET USER
+    # 👤 USER
     # =========================
+
     def get_user(self, hotel_id: str, uid: str):
-        return self._data.get((hotel_id, uid))
+        doc = self.db.collection("users").document(f"{hotel_id}_{uid}").get()
+        return doc.to_dict() if doc.exists else None
 
-    # =========================
-    # SET USER
-    # =========================
     def set_user(self, hotel_id: str, uid: str, data: dict):
-        self._data[(hotel_id, uid)] = data
+        self.db.collection("users").document(f"{hotel_id}_{uid}").set(data)
 
-    # =========================
-    # UPDATE USER
-    # =========================
     def update_user(self, hotel_id: str, uid: str, data: dict):
-        if (hotel_id, uid) not in self._data:
-            self._data[(hotel_id, uid)] = {}
-        self._data[(hotel_id, uid)].update(data)
+        self.db.collection("users").document(f"{hotel_id}_{uid}").set(
+            data, merge=True
+        )
 
     # =========================
-    # OVERRIDE LOG (DEV MODE)
+    # 🧾 OVERRIDE LOG
     # =========================
 
     def log_override(self, data: dict):
-        """
-        Save override log (in-memory for dev)
-        """
-        if "override_logs" not in self._data:
-            self._data["override_logs"] = []
-
-        self._data["override_logs"].append(data)
+        self.db.collection("override_logs").add(data)
 
     def get_override_logs(self, property_id: str):
-        """
-        Get override logs for a property
-        """
-        logs = self._data.get("override_logs", [])
+        docs = (
+            self.db.collection("override_logs")
+            .where("property_id", "==", property_id)
+            .stream()
+        )
+        return [doc.to_dict() for doc in docs]
 
-        return [
-        l for l in logs
-        if l.get("property_id") == property_id
-        ]
     # =========================
-    #                   
+    # 📦 COMMITTED TASKS
     # =========================
-    
+
     def list_committed(self):
         docs = self.db.collection("tasks").stream()
         return [doc.to_dict() for doc in docs]
@@ -58,12 +66,13 @@ class FirestoreDB:
     def commit_chain(self, task, subtasks, actor):
         doc_ref = self.db.collection("tasks").document(task.task_id)
 
-        doc_ref.set({
+        record = {
             "task_id": task.task_id,
             "name": task.name,
             "category": task.category,
             "work_type": task.work_type.name,
             "actor": actor,
+            "created_at": firestore.SERVER_TIMESTAMP,
             "subtasks": [
                 {
                     "skill": st.skill.name,
@@ -71,7 +80,9 @@ class FirestoreDB:
                     "end": st.end_date.isoformat(),
                 }
                 for st in subtasks
-            ]
-        })
+            ],
+        }
+
+        doc_ref.set(record)
 
         return task.task_id
