@@ -67,7 +67,7 @@ class FirestoreDB:
             self.db
             .collection("properties")
             .document(property_id)
-            .collection("tasks_committed")
+            .collection("tasks_commited")
             .stream()
         )
 
@@ -83,23 +83,22 @@ class FirestoreDB:
             .document(task.task_id)
         )
 
-    record = {
-        "task_id": task.task_id,
-        "name": task.name,
-        "category": task.category,
-        "work_type": task.work_type.name,
-        "actor": actor,
-        "created_at": firestore.SERVER_TIMESTAMP,
-        "subtasks": [
-            {
-                "skill": st.skill.name,
-                "start": st.start_date.isoformat(),
-                "end": st.end_date.isoformat(),
-            }
-            for st in subtasks
-        ],
-    }
+        record = {
+            "task_id": task.task_id,
+            "name": task.name,
+            "category": task.category,
+            "work_type": task.work_type.name,
+            "actor": actor,
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "subtasks": [
+                {
+                    "skill": st.skill.name,
+                    "start": st.start_date.isoformat(),
+                    "end": st.end_date.isoformat(),
+                }
+                for st in subtasks
+            ],
+        }
+        doc_ref.set(record)
 
-    doc_ref.set(record)
-
-    return task.task_id
+        return task.task_id
