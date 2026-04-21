@@ -1,6 +1,7 @@
 # planner_v2/db/firestore_db.py
 # planner_v2/db/firestore_db.py
-
+import os
+import json
 from google.cloud import firestore
 from google.oauth2 import service_account
 
@@ -16,7 +17,6 @@ db = firestore.Client(
     credentials=cred,
     project=cred.project_id,
 )
-
 
 # =========================
 # 🔥 FIRESTORE DB CLASS
