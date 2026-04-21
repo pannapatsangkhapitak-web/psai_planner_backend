@@ -1,4 +1,5 @@
 # planner_service/app/mapper.py
+from planner_v2.core.entities.subtask import SubTask
 
 def payload_to_task(req):
     return req  # placeholder
