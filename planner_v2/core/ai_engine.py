@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: ai_engine.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: Engine
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 from datetime import date, timedelta, datetime
 from collections import defaultdict
 from .models import Task, SubTask

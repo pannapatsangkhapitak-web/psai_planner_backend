@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: config_route.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 # import firebase_admin
 # from firebase_admin import credentials, firestore, auth
 

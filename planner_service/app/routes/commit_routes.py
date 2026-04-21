@@ -1,6 +1,12 @@
-#============================
-# commit_routes.py (Clean Version - PSAI V2)
-#============================
+# =========================================================
+# PSAI ENGINE
+# File: commit_route.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
 
 from datetime import datetime, date
 from fastapi import APIRouter, HTTPException
@@ -102,12 +108,13 @@ def commit_task(req: CommitRequest):
         # 4) Commit to Firestore
         # --------------------------------------------------
         db = FirestoreDB()
-        committed = db.list_committed()
+
+        committed = db.list_committed(req.property_id)   # ✅ ใส่ property_id
 
         calendar = CalendarAdapter(committed)
 
         engine = CommitEngine(
-            ai=None,  # 🔥 No AI in commit phase
+            ai=None,
             firestore=db
         )
 
@@ -117,6 +124,7 @@ def commit_task(req: CommitRequest):
             actor_uid=req.actor,
             decision_policy=req.decision_policy,
             use_ai=req.use_ai_helper,
+            property_id=req.property_id,   # ✅ เพิ่ม
         )
 
         if not result.get("success", False):

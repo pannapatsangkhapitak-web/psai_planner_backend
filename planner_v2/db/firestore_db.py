@@ -1,5 +1,13 @@
-# planner_v2/db/firestore_db.py
-# planner_v2/db/firestore_db.py
+# =========================================================
+# PSAI ENGINE
+# File: firestore_db.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: infra
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 import os
 import json
 from google.cloud import firestore

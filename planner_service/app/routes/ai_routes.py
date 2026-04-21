@@ -1,3 +1,14 @@
+# =========================================================
+# PSAI ENGINE
+# File: ai_route.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Dict, List

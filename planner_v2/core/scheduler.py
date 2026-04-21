@@ -1,13 +1,12 @@
-"""
-Scheduler Core (Day-based)
-
-Responsibilities:
-- Assign start/end dates to SubTasks
-- Enforce daily capacity (no overload)
-- Detect conflicts
-- Support STRICT vs ADD_ANYWAY decision policy
-- Record state transitions via TraceLog
-"""
+# =========================================================
+# PSAI ENGINE
+# File: scheduler.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: 
+# Debug: 
+# =========================================================
 
 from datetime import timedelta
 from typing import Dict, List

@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: enums.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 from enum import Enum
 
 class Skill(Enum):

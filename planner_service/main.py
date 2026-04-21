@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: main.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: main entry
+# Role: main entry
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 import os
 import json
 from firebase_admin import credentials, initialize_app

@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: models.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: infra
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Optional

@@ -1,4 +1,12 @@
-# planner_v2/core/commit_engine.py
+# =========================================================
+# PSAI ENGINE
+# File: commit_engine.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: engine
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
 
 from planner_v2.core.models import Task, SubTask
 
@@ -16,6 +24,7 @@ class CommitEngine:
         actor_uid: str,
         decision_policy: str,
         use_ai: bool,
+        property_id: str,   # ✅ เพิ่มตรงนี้
     ):
         # --------------------------------------------
         # 1) Validate timeline (must be provided)
@@ -56,6 +65,7 @@ class CommitEngine:
             task=task,
             subtasks=subtasks_sorted,
             actor=actor_uid,
+            property_id=property_id,   # ✅ เพิ่มบรรทัดนี้
         )
 
         # --------------------------------------------

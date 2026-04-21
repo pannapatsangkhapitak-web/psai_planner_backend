@@ -1,11 +1,12 @@
-"""
-Trace & State Transition Log
-
-Responsibilities:
-- Record every task state transition
-- Preserve reason & timestamp
-- Provide auditable history per task
-"""
+# =========================================================
+# PSAI ENGINE
+# File: trace.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: 
+# Debug: 
+# =========================================================
 
 from dataclasses import dataclass
 from datetime import datetime

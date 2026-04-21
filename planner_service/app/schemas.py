@@ -1,3 +1,12 @@
+# =========================================================
+# PSAI ENGINE
+# File: schemas.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
 from pydantic import BaseModel
 from typing import Optional, List, Dict
 

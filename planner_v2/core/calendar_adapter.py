@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: calendar_adaptor.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: engine
+# Role: 
+# Status: ACTIVE
+# Debug: 
+# =========================================================
+
 from datetime import date, datetime
 from typing import List, Dict, Any
 

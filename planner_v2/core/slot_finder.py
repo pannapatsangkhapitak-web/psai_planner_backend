@@ -1,3 +1,13 @@
+# =========================================================
+# PSAI ENGINE
+# File: slot_finder.py
+# Version: v1.0.0-d0/21.1.26
+# Layer: API
+# Role: 
+# Status: 
+# Debug: 
+# =========================================================
+
 from datetime import timedelta
 
 
