@@ -5,6 +5,7 @@ import json
 from google.cloud import firestore
 from google.oauth2 import service_account
 
+print("🔥 ENV KEYS:", os.environ.keys())
 # =========================
 # 🔐 INIT FIRESTORE (REAL)
 # =========================
@@ -61,30 +62,44 @@ class FirestoreDB:
     # 📦 COMMITTED TASKS
     # =========================
 
-    def list_committed(self):
-        docs = self.db.collection("tasks").stream()
+    def list_committed(self, property_id: str):
+        docs = (
+            self.db
+            .collection("properties")
+            .document(property_id)
+            .collection("tasks_committed")
+            .stream()
+        )
+
         return [doc.to_dict() for doc in docs]
 
-    def commit_chain(self, task, subtasks, actor):
-        doc_ref = self.db.collection("tasks").document(task.task_id)
 
-        record = {
-            "task_id": task.task_id,
-            "name": task.name,
-            "category": task.category,
-            "work_type": task.work_type.name,
-            "actor": actor,
-            "created_at": firestore.SERVER_TIMESTAMP,
-            "subtasks": [
-                {
-                    "skill": st.skill.name,
-                    "start": st.start_date.isoformat(),
-                    "end": st.end_date.isoformat(),
-                }
-                for st in subtasks
-            ],
-        }
+    def commit_chain(self, task, subtasks, actor, property_id):
+        doc_ref = (
+           self.db
+            .collection("properties")
+            .document(property_id)
+            .collection("tasks_committed")
+            .document(task.task_id)
+        )
 
-        doc_ref.set(record)
+    record = {
+        "task_id": task.task_id,
+        "name": task.name,
+        "category": task.category,
+        "work_type": task.work_type.name,
+        "actor": actor,
+        "created_at": firestore.SERVER_TIMESTAMP,
+        "subtasks": [
+            {
+                "skill": st.skill.name,
+                "start": st.start_date.isoformat(),
+                "end": st.end_date.isoformat(),
+            }
+            for st in subtasks
+        ],
+    }
 
-        return task.task_id
+    doc_ref.set(record)
+
+    return task.task_id
