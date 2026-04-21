@@ -9,7 +9,7 @@ from google.oauth2 import service_account
 # 🔐 INIT FIRESTORE (REAL)
 # =========================
 
-key_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+key_dict = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
 
 cred = service_account.Credentials.from_service_account_info(key_dict)
 
