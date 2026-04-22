@@ -58,10 +58,10 @@ class FirestoreDB:
     def log_override(self, data: dict):
         self.db.collection("override_logs").add(data)
 
-    def get_override_logs(self, property_id: str):
+    def get_override_logs(self, hotel_id: str):
         docs = (
             self.db.collection("override_logs")
-            .where("property_id", "==", property_id)
+            .where("hotel_id", "==", hotel_id)
             .stream()
         )
         return [doc.to_dict() for doc in docs]
@@ -70,11 +70,11 @@ class FirestoreDB:
     # 📦 COMMITTED TASKS
     # =========================
 
-    def list_committed(self, property_id: str):
+    def list_committed(self, hotel_id: str):
         docs = (
             self.db
             .collection("properties")
-            .document(property_id)
+            .document(hotel_id)
             .collection("tasks_commited")
             .stream()
         )
@@ -82,11 +82,11 @@ class FirestoreDB:
         return [doc.to_dict() for doc in docs]
 
 
-    def commit_chain(self, task, subtasks, actor, property_id):
+    def commit_chain(self, task, subtasks, actor, hotel_id):
         doc_ref = (
            self.db
             .collection("properties")
-            .document(property_id)
+            .document(hotel_id)
             .collection("tasks_committed")
             .document(task.task_id)
         )

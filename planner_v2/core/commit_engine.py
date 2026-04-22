@@ -24,7 +24,7 @@ class CommitEngine:
         actor_uid: str,
         decision_policy: str,
         use_ai: bool,
-        property_id: str,   # ✅ เพิ่มตรงนี้
+        hotel_id: str,   # ✅ เพิ่มตรงนี้
     ):
         # --------------------------------------------
         # 1) Validate timeline (must be provided)
@@ -65,7 +65,7 @@ class CommitEngine:
             task=task,
             subtasks=subtasks_sorted,
             actor=actor_uid,
-            property_id=property_id,   # ✅ เพิ่มบรรทัดนี้
+            hotel_id=hotel_id,   # ✅ เพิ่มบรรทัดนี้
         )
 
         # --------------------------------------------
