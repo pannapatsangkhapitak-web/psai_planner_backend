@@ -21,12 +21,12 @@ from planner_v2.core.enums import WorkType, Skill
 
 
 router = APIRouter(tags=["AI"])
-
+print("🔥 AI ROUTE v1.0.0-d1 LOADED")
 # =========================
 # REQUEST MODEL
 # =========================
 class SimulateRequest(BaseModel):
-    property_id: str   # 🔥 ต้องมี
+    hotel_id: str   # 🔥 ต้องมี
     work_type: str
     duration: Dict[str, int]  # {"CARPENTER": 2, "PAINTER": 1}
 
@@ -81,12 +81,13 @@ def simulate(req: SimulateRequest):
         db = firestore.client()
 
         docs = db.collection("properties") \
-            .document(req.property_id) \
+            .document(req.hotel_id) \
             .collection("tasks_committed") \
             .stream()
 
         committed_docs = [d.to_dict() for d in docs]
-
+        
+               
         # =========================
         # 🔥 ใช้ CalendarAdapter
         # =========================
@@ -94,7 +95,8 @@ def simulate(req: SimulateRequest):
 
         calendar = CalendarAdapter(committed_docs)
         print("REQ:", req)
-        print("HAS PROPERTY:", hasattr(req, "property_id"))
+        print("HAS PROPERTY:", hasattr(req, "hotel_id"))
+       
         # =========================
         # run AI
         # =========================

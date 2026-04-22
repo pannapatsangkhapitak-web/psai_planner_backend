@@ -27,7 +27,7 @@ class SubTaskInput(BaseModel):
     duration_days: int
     
 class SimulateRequest(BaseModel):
-    property_id: str
+    hotel_id: str
     work_type: str
     duration: Dict[str, int]
     
@@ -38,6 +38,7 @@ class WhatIfRequest(BaseModel):
     subtasks: Optional[List[SubTaskInput]] = []
 
 class CommitRequest(BaseModel):
+    hotel_id: str
     task: TaskPayload
     actor: str
     timeline: List[TimelineItem]

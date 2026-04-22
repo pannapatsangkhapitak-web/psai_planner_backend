@@ -109,7 +109,7 @@ def commit_task(req: CommitRequest):
         # --------------------------------------------------
         db = FirestoreDB()
 
-        committed = db.list_committed(req.property_id)   # ✅ ใส่ property_id
+        committed = db.list_committed(req.hotel_id)   
 
         calendar = CalendarAdapter(committed)
 
@@ -124,7 +124,7 @@ def commit_task(req: CommitRequest):
             actor_uid=req.actor,
             decision_policy=req.decision_policy,
             use_ai=req.use_ai_helper,
-            property_id=req.property_id,   # ✅ เพิ่ม
+            hotel_id=req.hotel_id,   # ✅ เพิ่ม
         )
 
         if not result.get("success", False):
