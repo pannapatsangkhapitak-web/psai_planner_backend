@@ -8,10 +8,21 @@
 # Debug: 
 # =========================================================
 
-from planner_v2.core.models import SubTask
+from planner_v2.core.models import Task, SubTask
+from planner_v2.core.enums import WorkType, Skill
 
-def payload_to_task(req):
-    return req  # placeholder
+
+def payload_to_task(payload):
+    return Task(
+        task_id=payload.task_id,
+        name=payload.task_name,   # ✅ important
+        category=payload.category,
+        work_type=WorkType[payload.work_type],
+        leader=Skill.CARPENTER,
+        start_date=None,
+        created_by=None
+    )
+
 
 def payload_to_subtasks(task, durations_by_skill):
     subtasks = []
@@ -27,17 +38,3 @@ def payload_to_subtasks(task, durations_by_skill):
         )
 
     return subtasks
-
-from planner_v2.core.models import Task
-from planner_v2.core.enums import WorkType, Skill
-
-def payload_to_task(payload):
-    return Task(
-        task_id=payload.task_id,
-        task_name=payload.task_name,
-        category=payload.category,
-        work_type=WorkType[payload.work_type],
-        leader=Skill.CARPENTER,  # หรือ derive จาก logic
-        start_date=None,
-        created_by=None
-    )
