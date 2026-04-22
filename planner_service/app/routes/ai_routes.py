@@ -54,7 +54,7 @@ def simulate(req: SimulateRequest):
         # create Task
         task = Task(
             task_id="SIM-1",
-            name="Simulated Task",
+            Task_name="Simulated Task",
             category="SIM",
             work_type=work_type,
             leader=to_skill(list(req.duration.keys())[0]),

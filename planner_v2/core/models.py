@@ -17,7 +17,7 @@ from .enums import Skill, WorkType, TaskState
 @dataclass
 class Task:
     task_id: str
-    name: str
+    task_name: str
     category: str
     work_type: WorkType
     leader: Skill

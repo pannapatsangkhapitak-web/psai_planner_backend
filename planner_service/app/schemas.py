@@ -17,7 +17,7 @@ class TimelineItem(BaseModel):
 
 class TaskPayload(BaseModel):
     task_id: str
-    name: str
+    task_name: str
     category: str
     work_type: str
     durations_by_skill: Optional[Dict[str, int]] = None
