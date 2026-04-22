@@ -100,16 +100,17 @@ def simulate(req: SimulateRequest):
         # =========================
         # run AI
         # =========================
+        print("STEP 1: before engine")
         engine = AIEngine(
             calendar=calendar,
             base_date=date.today()
         )
-
+        print("STEP 2: before suggest")    
         result = engine.suggest(
             task=task,
             subtasks=subtasks
         )
-
+        print("STEP 3: after suggest")
         return {
             "status": "ok",
             "result": result
