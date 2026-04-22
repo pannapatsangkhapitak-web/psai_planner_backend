@@ -80,14 +80,13 @@ def simulate(req: SimulateRequest):
 
         db = firestore.client()
 
-        #docs = db.collection("properties") \
-        #    .document(req.hotel_id) \
-        #  .collection("tasks_committed") \
-        #   .stream()
+        docs = db.collection("properties") \
+            .document(req.hotel_id) \
+            .collection("tasks_committed") \
+            .stream()
 
-        #committed_docs = [d.to_dict() for d in docs]
-        committed_docs = []  # 🔥 ใส่ mock ไปก่อน
-               
+        committed_docs = [d.to_dict() for d in docs]
+                 
         # =========================
         # 🔥 ใช้ CalendarAdapter
         # =========================

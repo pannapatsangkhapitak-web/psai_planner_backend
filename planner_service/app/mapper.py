@@ -15,7 +15,7 @@ from planner_v2.core.enums import WorkType, Skill
 def payload_to_task(payload):
     return Task(
         task_id=payload.task_id,
-        name=payload.task_name,   # ✅ important
+        task_name=payload.task_name,   # ✅ important
         category=payload.category,
         work_type=WorkType[payload.work_type],
         leader=Skill.CARPENTER,
