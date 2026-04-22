@@ -93,7 +93,7 @@ class FirestoreDB:
 
         record = {
             "task_id": task.task_id,
-            "name": task.name,
+            "task name": task.name,
             "category": task.category,
             "work_type": task.work_type.name,
             "actor": actor,
