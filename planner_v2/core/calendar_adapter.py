@@ -22,7 +22,12 @@ class CalendarAdapter:
 
         for doc in committed_docs:
             task_id = doc.get("task_id")
-            timeline = doc.get("committed_timeline", [])
+
+            timeline = (
+                doc.get("committed_timeline")
+                or doc.get("subtasks")
+                or []
+            )
 
             for t in timeline:
                 skill = t.get("skill")
