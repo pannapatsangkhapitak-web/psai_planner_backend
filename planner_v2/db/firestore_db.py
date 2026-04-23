@@ -10,16 +10,17 @@
 
 import os
 import json
+from datetime import date, datetime
 from google.cloud import firestore
 from google.oauth2 import service_account
 
 print("🔥 ENV KEYS:", os.environ.keys())
+
 # =========================
 # 🔐 INIT FIRESTORE (REAL)
 # =========================
 
 key_dict = json.loads(os.environ["GOOGLE_APPLICATION_CREDENTIALS"])
-
 cred = service_account.Credentials.from_service_account_info(key_dict)
 
 db = firestore.Client(
@@ -33,7 +34,7 @@ db = firestore.Client(
 
 class FirestoreDB:
     def __init__(self):
-        self.db = db  # ✅ ใช้ instance ที่มี credential แล้ว
+        self.db = db
 
     # =========================
     # 👤 USER
@@ -52,10 +53,15 @@ class FirestoreDB:
         )
 
     # =========================
-    # 🧾 OVERRIDE LOG
+    # 🧾 AUDIT / OVERRIDE LOG
     # =========================
 
+    def log_audit(self, data: dict):
+        data["timestamp"] = datetime.utcnow().isoformat()
+        self.db.collection("audit_logs").add(data)
+
     def log_override(self, data: dict):
+        # (เก็บไว้เผื่อ backward compatibility)
         self.db.collection("override_logs").add(data)
 
     def get_override_logs(self, hotel_id: str):
@@ -75,16 +81,15 @@ class FirestoreDB:
             self.db
             .collection("properties")
             .document(hotel_id)
-            .collection("tasks_commited")
+            .collection("tasks_committed")   # 🔥 FIX spelling
             .stream()
         )
 
         return [doc.to_dict() for doc in docs]
 
-
     def commit_chain(self, task, subtasks, actor, hotel_id):
         doc_ref = (
-           self.db
+            self.db
             .collection("properties")
             .document(hotel_id)
             .collection("tasks_committed")
@@ -107,6 +112,58 @@ class FirestoreDB:
                 for st in subtasks
             ],
         }
-        doc_ref.set(record)
 
+        doc_ref.set(record)
         return task.task_id
+
+    # =========================
+    # 🔍 CONFLICT CHECK
+    # =========================
+
+    def check_conflict(self, subtasks, hotel_id):
+        existing_tasks = self.list_committed(hotel_id)
+        conflicts = []
+
+        for st in subtasks:
+            for task in existing_tasks:
+                for t in task.get("subtasks", []):
+
+                    same_skill = t["skill"] == st.skill.name
+
+                    start = date.fromisoformat(t["start"])
+                    end = date.fromisoformat(t["end"])
+
+                    overlap = not (
+                        st.end_date < start or
+                        st.start_date > end
+                    )
+
+                    if same_skill and overlap:
+                        conflicts.append(task)
+                        break
+
+        return conflicts
+
+    # =========================
+    # 📦 MOVE TO ARCHIVE (REMOVE + ARCHIVE)
+    # =========================
+
+    def move_to_archive(self, tasks, hotel_id):
+        for task in tasks:
+            task_id = task.get("task_id")
+
+            # 1) เก็บลง archive
+            self.db \
+                .collection("properties") \
+                .document(hotel_id) \
+                .collection("tasks_archive") \
+                .document(task_id) \
+                .set(task)
+
+            # 2) ลบจาก committed
+            self.db \
+                .collection("properties") \
+                .document(hotel_id) \
+                .collection("tasks_committed") \
+                .document(task_id) \
+                .delete()
