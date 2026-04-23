@@ -40,7 +40,6 @@ class WhatIfRequest(BaseModel):
 class CommitRequest(BaseModel):
     hotel_id: str
     task: TaskPayload
-    actor: str
     timeline: List[TimelineItem]
 
     # optional controls
@@ -52,7 +51,6 @@ class CommitResponse(BaseModel):
     final_state: str
     committed_start_date: str
     committed_timeline: List[Dict]
-    actor: str
     created_at: str
 
 CommitRequest.model_rebuild()
