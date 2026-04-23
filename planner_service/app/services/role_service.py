@@ -14,7 +14,7 @@ from planner_v2.db.firestore_db import FirestoreDB
 def get_user_role(uid: str) -> str:
     db = FirestoreDB()
 
-    doc = db.collection("users").document(uid).get()
+    doc = db.db.collection("users").document(uid).get()
     
     if not doc.exists:
         return "USER"  # default
