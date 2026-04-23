@@ -25,7 +25,7 @@ from planner_v2.extensions.multi_skill.worktype_mapping import (
     build_subtasks_from_worktype
 )
 from planner_v2.core.enums import WorkType
-from app.core.auth import get_current_user
+from ..core.auth import get_current_user
 
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
