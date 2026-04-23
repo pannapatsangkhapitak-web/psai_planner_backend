@@ -28,7 +28,7 @@ def verify_sys_admin(token: str):
         uid = decoded_token["uid"]
 
         # 🔥 GLOBAL USER ONLY (ไม่ใช้ hotel_id)
-        doc = db.collection("users").document(uid).get()
+        doc = db.collection("system_users").document(uid).get()
 
         if not doc.exists:
             raise HTTPException(status_code=403, detail="User profile not found")
