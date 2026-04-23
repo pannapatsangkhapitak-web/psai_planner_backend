@@ -104,6 +104,8 @@ def commit_task(req: CommitRequest, request: Request):
         # --------------------------------------------------
         user = get_current_user(request)
         uid = user["uid"]
+        
+        role = get_user_role(uid)   # 🔥 ต้องมีบรรทัดนี้
 
         print(f"🔥 AUTH UID = {uid}")
 
