@@ -29,7 +29,11 @@ def verify_sys_admin(token: str):
 
         # 🔥 GLOBAL USER ONLY (ไม่ใช้ hotel_id)
         doc = db.collection("system_users").document(uid).get()
-
+        
+        print("🔥 UID:", uid)
+        print("🔥 USER DOC:", doc.to_dict())
+        print("🔥 ROLE:", role)
+        
         if not doc.exists:
             raise HTTPException(status_code=403, detail="User profile not found")
 
@@ -47,9 +51,7 @@ def verify_sys_admin(token: str):
             "email": decoded_token.get("email"),
             "role": role,
         }
-        print("🔥 UID:", uid)
-        print("🔥 USER DOC:", doc.to_dict())
-        print("🔥 ROLE:", role)
+        
 
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
