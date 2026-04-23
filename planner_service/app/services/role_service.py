@@ -9,7 +9,7 @@
 # =========================================================
 
 from fastapi import HTTPException
-from planner_v2.db.firestore import FirestoreDB
+from planner_v2.db.firestore_db import FirestoreDB
 
 def get_user_role(uid: str) -> str:
     db = FirestoreDB()
