@@ -1,14 +1,39 @@
 # =========================================================
 # PSAI ENGINE
 # File: commit_route.py
-# Version: v1.0.0-d1/22.4.26
+# Version: v1.1.0-d2/23.04.26
 # Layer: API
-# Role: Enforce commit + role-based override (AUTH FROM TOKEN)
-# Status: ACTIVE
+# Role:
+# - Enforce trusted commit (UID from Firebase token)
+# - Enforce role-based override (MASTER only)
+# Status: ACTIVE (AUTH + RBAC LOCKED)
+#
 # Debug:
 # - d1: REMOVE TRUST FROM PAYLOAD actor
-# - d1: ADD get_current_uid() from Authorization header
-# - d1: DEBUG compare AUTH UID vs PAYLOAD actor
+# - d1: ADD get_current_user() from Authorization header
+# - d1: MIGRATE actor → backend UID (token-based)
+#
+# - d2: REMOVE actor from CommitRequest schema (no client authority)
+# - d2: FRONTEND remove actor from request body
+# - d2: ADD override guard (decision_policy == "OVERRIDE")
+# - d2: ENFORCE require_master(uid) at API layer
+# - d2: NORMALIZE decision_policy (upper-case safety)
+# - d2: FIX exception handling (preserve HTTPException, avoid masking 403)
+#
+# System Behavior:
+# - USER → allowed to commit under constraints (STRICT/SAFE)
+# - USER → blocked on OVERRIDE (403 Forbidden)
+# - MASTER → allowed to override constraints
+#
+# Security Model:
+# - Client cannot define actor
+# - Backend = source of truth (UID from token)
+# - Role enforcement at API boundary (not frontend)
+#
+# Notes:
+# - Override defined as decision_policy == "OVERRIDE"
+# - Future: extend override detection from engine constraint violation
+# - Next step: wire override → archive + audit trail
 # =========================================================
 
 from datetime import datetime, date
@@ -70,26 +95,34 @@ def build_committed_timeline(timeline):
 # 🚀 COMMIT ROUTE
 # ==================================================
 
+from app.core.auth import get_current_user
+from app.services.role_service import require_master
+
 @router.post("", response_model=CommitResponse)
 def commit_task(req: CommitRequest, request: Request):
     try:
         # --------------------------------------------------
-        # 🔐 AUTH (d1)
+        # 🔐 AUTH (source of truth)
         # --------------------------------------------------
         user = get_current_user(request)
         uid = user["uid"]
-        
+
         print(f"🔥 AUTH UID = {uid}")
-        
+
+        # --------------------------------------------------
+        # 🔒 OVERRIDE GUARD (MASTER only)
+        # --------------------------------------------------
+        policy = (req.decision_policy or "STRICT").upper()
+
+        if policy == "OVERRIDE":
+            require_master(uid)  # ❌ USER จะโดน block ตรงนี้ทันที
+
         # --------------------------------------------------
         # 1) payload → Task
         # --------------------------------------------------
         task = payload_to_task(req.task)
 
-        # ❌ OLD (unsafe)
-        # task.created_by = req.actor
-
-        # ✅ NEW (trusted)
+        # ✅ trusted actor
         task.created_by = uid
 
         # --------------------------------------------------
@@ -131,7 +164,6 @@ def commit_task(req: CommitRequest, request: Request):
         db = FirestoreDB()
 
         committed = db.list_committed(req.hotel_id)
-
         calendar = CalendarAdapter(committed)
 
         engine = CommitEngine(
@@ -142,8 +174,8 @@ def commit_task(req: CommitRequest, request: Request):
         result = engine.apply_commit(
             task=task,
             subtasks=subtasks,
-            actor_uid=uid,  # ✅ ใช้ uid จริง
-            decision_policy=req.decision_policy,
+            actor_uid=uid,  # ✅ real UID
+            decision_policy=policy,  # 🔥 ใช้ค่าที่ normalize แล้ว
             use_ai=req.use_ai_helper,
             hotel_id=req.hotel_id,
         )
@@ -168,6 +200,9 @@ def commit_task(req: CommitRequest, request: Request):
             created_at=datetime.utcnow().isoformat(),
         )
 
+    except HTTPException:
+        # pass through (อย่าห่อ 403/400 ให้กลายเป็น 500)
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
