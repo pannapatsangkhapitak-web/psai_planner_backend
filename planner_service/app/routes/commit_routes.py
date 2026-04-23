@@ -25,38 +25,10 @@ from planner_v2.extensions.multi_skill.worktype_mapping import (
     build_subtasks_from_worktype
 )
 from planner_v2.core.enums import WorkType
+from app.core.auth import get_current_user
+
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
-
-# ==================================================
-# 🔐 AUTH HELPER
-# ==================================================
-def get_current_uid(request: Request):
-    """
-    🔥 SOURCE OF TRUTH FOR USER ID
-    - Read from Authorization header ONLY
-    - DO NOT TRUST req.actor
-    """
-
-    auth = request.headers.get("Authorization")
-
-    if not auth:
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    try:
-        token = auth.split(" ")[1]
-    except:
-        raise HTTPException(status_code=401, detail="Invalid token format")
-
-    # ⚠️ DEV MODE (ยังไม่ verify Firebase จริง)
-    # TODO: replace with firebase_admin.verify_id_token(token)
-
-    print(f"🔥 RAW TOKEN (partial) = {token[:20]}...")
-
-    # 🔥 TEMP: ใช้ fallback UID ชั่วคราว
-    # 👉 ใน production ต้อง decode token จริง
-    return "DEV_FAKE_UID"
-
 
 # ==================================================
 # 🔧 helpers
@@ -104,11 +76,11 @@ def commit_task(req: CommitRequest, request: Request):
         # --------------------------------------------------
         # 🔐 AUTH (d1)
         # --------------------------------------------------
-        uid = get_current_uid(request)
-
+        user = get_current_user(request)
+        uid = user["uid"]
+        
         print(f"🔥 AUTH UID = {uid}")
-        print(f"🔥 PAYLOAD ACTOR = {req.actor}")  # debug only (DO NOT TRUST)
-
+        
         # --------------------------------------------------
         # 1) payload → Task
         # --------------------------------------------------
