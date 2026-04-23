@@ -47,6 +47,9 @@ def verify_sys_admin(token: str):
             "email": decoded_token.get("email"),
             "role": role,
         }
+        print("🔥 UID:", uid)
+        print("🔥 USER DOC:", doc.to_dict())
+        print("🔥 ROLE:", role)
 
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
