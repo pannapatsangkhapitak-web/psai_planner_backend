@@ -9,7 +9,7 @@
 # =========================================================
 
 from fastapi import HTTPException
-from app.db.firestore import FirestoreDB
+from ..db.firestore import FirestoreDB
 
 def get_user_role(uid: str) -> str:
     db = FirestoreDB()
