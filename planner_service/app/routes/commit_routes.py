@@ -51,6 +51,7 @@ from planner_v2.extensions.multi_skill.worktype_mapping import (
 )
 from planner_v2.core.enums import WorkType
 from ..core.auth import get_current_user
+from ..services.role_service import require_master
 
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
