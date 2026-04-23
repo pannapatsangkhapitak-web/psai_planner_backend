@@ -1,29 +1,60 @@
 # =========================================================
 # PSAI ENGINE
 # File: config_route.py
-# Version: v1.0.0-d0/21.1.26
+# Version: v1.1.0-d1/23.4.26
 # Layer: API
-# Role: 
+# Role: SYS_ADMIN only (GLOBAL USER)
 # Status: ACTIVE
-# Debug: 
 # =========================================================
 
-# import firebase_admin
-# from firebase_admin import credentials, firestore, auth
-
 from fastapi import APIRouter, Header, HTTPException
-from planner_service.app.admin_guard import verify_sys_admin
-
 from typing import List
 from pydantic import BaseModel
 
+from firebase_admin import auth, firestore
+
+# 🔥 ใช้ Firestore client จริง
+db = firestore.client()
+
 router = APIRouter()
-db = None # firestore.client()
 
 
-# =========================
-# GET CONFIG (SYS ADMIN)
-# =========================
+# =========================================================
+# 🔐 AUTH: VERIFY SYS ADMIN (GLOBAL USER)
+# =========================================================
+def verify_sys_admin(token: str):
+    try:
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token["uid"]
+
+        # 🔥 GLOBAL USER ONLY (ไม่ใช้ hotel_id)
+        doc = db.collection("users").document(uid).get()
+
+        if not doc.exists:
+            raise HTTPException(status_code=403, detail="User profile not found")
+
+        user_data = doc.to_dict()
+        role = user_data.get("role")
+
+        if role is None:
+            raise HTTPException(status_code=403, detail="User role missing")
+
+        if role.lower() != "sys_admin":
+            raise HTTPException(status_code=403, detail="SYS_ADMIN only")
+
+        return {
+            "uid": uid,
+            "email": decoded_token.get("email"),
+            "role": role,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+
+
+# =========================================================
+# 📥 GET CONFIG (SYS ADMIN ONLY)
+# =========================================================
 @router.get("/config")
 def get_config(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
@@ -31,21 +62,18 @@ def get_config(authorization: str = Header(...)):
 
     token = authorization.replace("Bearer ", "")
 
-    try:
-        decoded = verify_sys_admin(token)
-    except Exception:
-        decoded = {"role": "DEV", "email": "local@test"}
+    decoded = verify_sys_admin(token)
 
     return {
         "message": "config access granted",
-        "role": decoded.get("role"),
-        "email": decoded.get("email"),
-        }
+        "role": decoded["role"],
+        "email": decoded["email"],
+    }
 
 
-# =========================
-# SCHEMA
-# =========================
+# =========================================================
+# 📦 SCHEMA
+# =========================================================
 class ConfigUserItem(BaseModel):
     email: str
     first_name: str
@@ -61,16 +89,29 @@ class ConfigUpdateRequest(BaseModel):
     users: List[ConfigUserItem]
 
 
-# =========================
-# UPDATE CONFIG + USERS
-# =========================
+# =========================================================
+# 📤 UPDATE CONFIG (SYS ADMIN ONLY)
+# =========================================================
 @router.put("/config/{hotel_id}")
-def update_config(hotel_id: str, request: ConfigUpdateRequest):
+def update_config(
+    hotel_id: str,
+    request: ConfigUpdateRequest,
+    authorization: str = Header(...)
+):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing Bearer token")
+
+    token = authorization.replace("Bearer ", "")
+
+    # 🔥 enforce sys_admin ก่อนทำอะไร
+    verify_sys_admin(token)
 
     data = request.model_dump()
     print("🔥 CONFIG UPDATE:", data)
 
-    # 🔹 update property
+    # -----------------------------
+    # 🏨 UPDATE PROPERTY
+    # -----------------------------
     db.collection("properties").document(hotel_id).set(
         {
             "hotel_name": data["hotel_name"],
@@ -83,13 +124,18 @@ def update_config(hotel_id: str, request: ConfigUpdateRequest):
 
     users_ref = db.collection("properties").document(hotel_id).collection("users")
 
-    # 🔹 existing users (UID)
+    # -----------------------------
+    # 👤 EXISTING USERS
+    # -----------------------------
     existing_users = [doc.id for doc in users_ref.stream()]
     new_user_uids = []
 
     for user in data["users"]:
         email = user["email"]
 
+        # -------------------------
+        # 🔐 GET OR CREATE USER
+        # -------------------------
         try:
             fb_user = auth.get_user_by_email(email)
         except:
@@ -98,14 +144,18 @@ def update_config(hotel_id: str, request: ConfigUpdateRequest):
         uid = fb_user.uid
         new_user_uids.append(uid)
 
-        # 🔥 generate reset link (invite flow)
+        # -------------------------
+        # 🔗 INVITE LINK
+        # -------------------------
         try:
             link = auth.generate_password_reset_link(email)
             print(f"🔗 INVITE LINK for {email}: {link}")
         except Exception as e:
             print(f"⚠️ Reset link error for {email}: {e}")
 
-        # 🔹 save user (UID as key)
+        # -------------------------
+        # 💾 SAVE TENANT USER
+        # -------------------------
         users_ref.document(uid).set({
             "email": email,
             "first_name": user["first_name"],
@@ -114,7 +164,9 @@ def update_config(hotel_id: str, request: ConfigUpdateRequest):
             "active": True,
         }, merge=True)
 
-    # 🔹 delete removed users
+    # -----------------------------
+    # 🗑 REMOVE OLD USERS
+    # -----------------------------
     to_delete = set(existing_users) - set(new_user_uids)
 
     for uid in to_delete:
