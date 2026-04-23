@@ -94,7 +94,7 @@ def build_committed_timeline(timeline):
 # ==================================================
 # 🚀 COMMIT ROUTE
 # ==================================================
-from app.services.role_service import require_master
+from planner_service.app.services.role_service import require_master
 
 @router.post("", response_model=CommitResponse)
 def commit_task(req: CommitRequest, request: Request):
