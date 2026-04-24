@@ -103,7 +103,7 @@ class ConfigUpdateRequest(BaseModel):
 # =========================================================
 # 📤 UPDATE CONFIG (SYS ADMIN ONLY)
 # =========================================================
-@router.put("/config/{hotel_id}")
+@router.put("/{hotel_id}/")
 def update_config(
     hotel_id: str,
     request: ConfigUpdateRequest,
