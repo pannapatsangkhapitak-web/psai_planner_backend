@@ -63,7 +63,11 @@ def verify_sys_admin(token: str):
 # =========================================================
 # 📥 GET CONFIG (SYS ADMIN ONLY)
 # =========================================================
-@router.get("/config")
+from fastapi import APIRouter, Header, HTTPException
+
+router = APIRouter()
+
+@router.get("/")
 def get_config(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing Bearer token")
@@ -77,7 +81,6 @@ def get_config(authorization: str = Header(...)):
         "role": decoded["role"],
         "email": decoded["email"],
     }
-
 
 # =========================================================
 # 📦 SCHEMA
