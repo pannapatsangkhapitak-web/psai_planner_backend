@@ -29,6 +29,14 @@ app.add_middleware(
     allow_methods=["*"],  # 🔥 สำคัญ (ต้องมี OPTIONS)
     allow_headers=["*"],  # 🔥 สำคัญ (ต้อง allow Authorization)
 )
+# =========================
+# Preflight
+# =========================
+from fastapi.responses import Response
+
+@app.options("/{full_path:path}")
+async def preflight_handler():
+    return Response(status_code=200)
 
 # =========================
 # FIREBASE INIT
