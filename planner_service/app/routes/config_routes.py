@@ -22,23 +22,25 @@ router = APIRouter()
 # =========================================================
 # 🔐 AUTH: VERIFY SYS ADMIN (GLOBAL USER)
 # =========================================================
+from fastapi import HTTPException
+
 def verify_sys_admin(token: str):
     try:
         decoded_token = auth.verify_id_token(token)
         uid = decoded_token["uid"]
 
-        # 🔥 GLOBAL USER ONLY (ไม่ใช้ hotel_id)
         doc = db.collection("system_users").document(uid).get()
-        
+
         print("🔥 UID:", uid)
         print("🔥 USER DOC:", doc.to_dict())
-        print("🔥 ROLE:", role)
-        
+
         if not doc.exists:
             raise HTTPException(status_code=403, detail="User profile not found")
 
         user_data = doc.to_dict()
         role = user_data.get("role")
+
+        print("🔥 ROLE:", role)
 
         if role is None:
             raise HTTPException(status_code=403, detail="User role missing")
@@ -51,12 +53,13 @@ def verify_sys_admin(token: str):
             "email": decoded_token.get("email"),
             "role": role,
         }
-        
+
+    except HTTPException:
+        raise  # 🔥 ปล่อย error เดิม
 
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
-
-
+    
 # =========================================================
 # 📥 GET CONFIG (SYS ADMIN ONLY)
 # =========================================================
