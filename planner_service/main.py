@@ -24,7 +24,7 @@ app = FastAPI()
 # =========================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # หรือใส่ domain จริงก็ได้
+    allow_origins=["http://localhost:5509", "http://localhost:5509/"],  # หรือใส่ domain จริงก็ได้
     allow_credentials=False,
     allow_methods=["*"],  # 🔥 สำคัญ (ต้องมี OPTIONS)
     allow_headers=["*"],  # 🔥 สำคัญ (ต้อง allow Authorization)
