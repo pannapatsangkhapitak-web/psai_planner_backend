@@ -75,7 +75,7 @@ def apply_timeline_to_subtasks(subtasks, timeline):
         if not st:
             continue
        
-    st.start_date = item.start
+    st.start_date = item.start,
     st.end_date = item.end - timedelta(days=1)
     
 
@@ -87,7 +87,7 @@ def build_committed_timeline(timeline):
     return [
         {
             "skill": normalize_skill(item.skill),
-            "start": item.start
+            "start": item.start.isoformat(),
             "end": (item.end - timedelta(days=1)).isoformat()
         }
         for item in timeline
