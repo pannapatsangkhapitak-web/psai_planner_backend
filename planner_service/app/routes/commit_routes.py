@@ -95,7 +95,6 @@ def build_committed_timeline(timeline):
 # ==================================================
 # 🚀 COMMIT ROUTE
 # ==================================================
-from planner_service.app.services.role_service import require_master
 
 @router.post("", response_model=CommitResponse)
 def commit_task(req: CommitRequest, request: Request):
@@ -112,14 +111,7 @@ def commit_task(req: CommitRequest, request: Request):
         print(f"🔥 HOTEL = {req.hotel_id}")
         print(f"🔥 ROLE = {role}")
 
-        # --------------------------------------------------
-        # 🔒 OVERRIDE GUARD (MASTER only)
-        # --------------------------------------------------
-        policy = (req.decision_policy or "STRICT").upper()
-
-        if policy == "OVERRIDE":
-            require_master(uid, req.hotel_id)
-
+        
         # --------------------------------------------------
         # 1) payload → Task
         # --------------------------------------------------
@@ -161,24 +153,7 @@ def commit_task(req: CommitRequest, request: Request):
                     detail="Invalid timeline mapping"
                 )
         
-        # --------------------------------------------------
-        # 🔥 4) CHECK CONFLICT
-        # --------------------------------------------------
-        from planner_service.app.services.conflict_service import has_conflict
-        
-        conflict = has_conflict(subtasks, req.hotel_id)
-
-        print(f"🔥 POLICY={policy} CONFLICT={conflict}")
-        
-        if policy == "STRICT" and conflict:
-            return JSONResponse(
-                status_code=200,
-            content={
-                "conflict": True,
-                "message": "Task overlaps existing schedule"
-            }
-        )
-            
+                   
         # --------------------------------------------------
         # 4) Commit to Firestore
         # --------------------------------------------------
