@@ -4,7 +4,7 @@ from planner_v2.db.firestore_db import FirestoreDB
 
 def has_conflict(subtasks, hotel_id: str) -> bool:
     db = FirestoreDB()
-
+    print("🔥 CONFLICT SERVICE CALLED")
     ref = db.db \
         .collection("properties") \
         .document(hotel_id) \
@@ -27,5 +27,5 @@ def has_conflict(subtasks, hotel_id: str) -> bool:
                 if not (st.end_date < start or st.start_date > end):
                     print(f"❌ CONFLICT: {skill} {start}-{end}")
                     return True
-    print("🔥 CONFLICT SERVICE CALLED")
+    
     return False
