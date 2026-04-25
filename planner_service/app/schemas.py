@@ -9,6 +9,7 @@
 # =========================================================
 from pydantic import BaseModel
 from typing import Optional, List, Dict
+from datetime import date
 
 class TimelineItem(BaseModel):
     skill: str
