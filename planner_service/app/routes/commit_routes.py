@@ -166,6 +166,7 @@ def commit_task(req: CommitRequest, request: Request):
             ai=None,
             firestore=db
         )
+        policy = (req.decision_policy or "STRICT").upper()
 
         result = engine.apply_commit(
             task=task,
