@@ -53,6 +53,7 @@ from planner_v2.core.enums import WorkType
 from ..core.auth import get_current_user
 from ..services.role_service import get_user_role
 from fastapi.responses import JSONResponse
+from datetime import timedelta
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
 
@@ -74,8 +75,6 @@ def apply_timeline_to_subtasks(subtasks, timeline):
         if not st:
             continue
        
-    from datetime import timedelta
-
     st.start_date = date.fromisoformat(item.start)
     st.end_date = date.fromisoformat(item.end) - timedelta(days=1)
 
