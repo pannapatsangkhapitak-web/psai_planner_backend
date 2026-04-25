@@ -27,5 +27,5 @@ def has_conflict(subtasks, hotel_id: str) -> bool:
                 if not (st.end_date < start or st.start_date > end):
                     print(f"❌ CONFLICT: {skill} {start}-{end}")
                     return True
-
+    print("🔥 CONFLICT SERVICE CALLED")
     return False

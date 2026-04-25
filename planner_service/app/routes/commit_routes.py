@@ -169,7 +169,7 @@ def commit_task(req: CommitRequest, request: Request):
         conflict = has_conflict(subtasks, req.hotel_id)
 
         print(f"🔥 POLICY={policy} CONFLICT={conflict}")
-
+        
         if policy == "STRICT" and conflict:
             return JSONResponse(
                 status_code=200,
