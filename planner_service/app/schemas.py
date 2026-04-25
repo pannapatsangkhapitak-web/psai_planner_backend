@@ -12,8 +12,8 @@ from typing import Optional, List, Dict
 
 class TimelineItem(BaseModel):
     skill: str
-    start: str
-    end: str
+    start: date
+    end: date
 
 class TaskPayload(BaseModel):
     task_id: str
