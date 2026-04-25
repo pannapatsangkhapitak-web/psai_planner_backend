@@ -105,9 +105,11 @@ def commit_task(req: CommitRequest, request: Request):
         user = get_current_user(request)
         uid = user["uid"]
         
-        role = get_user_role(uid)   # 🔥 ต้องมีบรรทัดนี้
+        role = get_user_role(uid, req.hotel_id)
 
-        print(f"🔥 AUTH UID = {uid}")
+        print(f"🔥 UID = {uid}")
+        print(f"🔥 HOTEL = {req.hotel_id}")
+        print(f"🔥 ROLE = {role}")
 
         # --------------------------------------------------
         # 🔒 OVERRIDE GUARD (MASTER only)
@@ -115,7 +117,7 @@ def commit_task(req: CommitRequest, request: Request):
         policy = (req.decision_policy or "STRICT").upper()
 
         if policy == "OVERRIDE":
-            require_master(uid)  # ❌ USER จะโดน block ตรงนี้ทันที
+            require_master(uid, req.hotel_id)
 
         # --------------------------------------------------
         # 1) payload → Task

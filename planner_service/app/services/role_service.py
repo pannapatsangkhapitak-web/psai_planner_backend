@@ -11,20 +11,24 @@
 from fastapi import HTTPException
 from planner_v2.db.firestore_db import FirestoreDB
 
-def get_user_role(uid: str) -> str:
+def get_user_role(uid: str, hotel_id: str) -> str:
     db = FirestoreDB()
 
-    doc = db.db.collection("users").document(uid).get()
-    
+    doc = db.db \
+        .collection("properties") \
+        .document(hotel_id) \
+        .collection("users") \
+        .document(uid) \
+        .get()
+
     if not doc.exists:
-        return "USER"  # default
+        return "USER"
 
     data = doc.to_dict()
     return data.get("role", "USER")
 
-
-def require_master(uid: str):
-    role = get_user_role(uid)
+def require_master(uid: str, hotel_id: str):
+    role = get_user_role(uid, hotel_id)
 
     if role != "MASTER":
         raise HTTPException(
