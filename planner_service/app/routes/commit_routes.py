@@ -77,7 +77,7 @@ def apply_timeline_to_subtasks(subtasks, timeline):
        
     st.start_date = item.start,
     st.end_date = item.end - timedelta(days=1)
-    
+    print(type(item.end), item.end)
 
 def build_committed_timeline(timeline):
     
