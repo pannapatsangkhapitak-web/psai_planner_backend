@@ -52,6 +52,7 @@ from planner_v2.extensions.multi_skill.worktype_mapping import (
 from planner_v2.core.enums import WorkType
 from ..core.auth import get_current_user
 from ..services.role_service import get_user_role
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
 
@@ -163,15 +164,21 @@ def commit_task(req: CommitRequest, request: Request):
         # --------------------------------------------------
         # 🔥 4) CHECK CONFLICT
         # --------------------------------------------------
-        conflict = check_conflict(subtasks, req.hotel_id)
+        from planner_service.app.services.conflict_service import has_conflict
+        
+        conflict = has_conflict(subtasks, req.hotel_id)
+
+        print(f"🔥 POLICY={policy} CONFLICT={conflict}")
 
         if policy == "STRICT" and conflict:
-            return {
-            "conflict": True,
-            "message": "This task conflicts with existing schedule"
+            return JSONResponse(
+                status_code=200,
+            content={
+                "conflict": True,
+                "message": "Task overlaps existing schedule"
             }
-        
-        
+        )
+            
         # --------------------------------------------------
         # 4) Commit to Firestore
         # --------------------------------------------------
