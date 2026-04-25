@@ -159,7 +159,19 @@ def commit_task(req: CommitRequest, request: Request):
                     status_code=400,
                     detail="Invalid timeline mapping"
                 )
+        
+        # --------------------------------------------------
+        # 🔥 4) CHECK CONFLICT
+        # --------------------------------------------------
+        conflict = check_conflict(subtasks, req.hotel_id)
 
+        if policy == "STRICT" and conflict:
+            return {
+            "conflict": True,
+            "message": "This task conflicts with existing schedule"
+            }
+        
+        
         # --------------------------------------------------
         # 4) Commit to Firestore
         # --------------------------------------------------
