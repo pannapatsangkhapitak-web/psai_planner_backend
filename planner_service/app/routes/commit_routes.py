@@ -180,11 +180,15 @@ def commit_task(req: CommitRequest, request: Request):
         )
 
         if not result.get("success", False):
-            raise HTTPException(
-                status_code=409,
-                detail=result.get("reason", "Commit failed")
-            )
+            from fastapi.responses import JSONResponse
 
+            return JSONResponse(
+                status_code=409,
+                content={
+                "success": False,
+                "reason": result.get("reason", "CONFLICT_NOT_ALLOWED")
+                }
+            )
         # --------------------------------------------------
         # 6) Response
         # --------------------------------------------------
