@@ -162,15 +162,15 @@ class AIEngine:
             start = dates[0]
             prev = dates[0]
 
-        for d in dates[1:]:
-            if (d - prev).days == 1:
-                prev = d
-            else:
-                result.append((skill, start, prev))
-                start = d
-                prev = d
+            for d in dates[1:]:
+                if (d - prev).days == 1:
+                    prev = d
+                else:
+                    result.append((skill, start, prev))
+                    start = d
+                    prev = d
 
-        result.append((skill, start, prev))
+            result.append((skill, start, prev))
 
         return result
 
