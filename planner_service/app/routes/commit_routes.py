@@ -36,26 +36,29 @@
 # - Next step: wire override → archive + audit trail
 # =========================================================
 
-from datetime import datetime, date
+# ==================================================
+# 🚀 COMMIT ROUTE (CLEAN)
+# ==================================================
+
+from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Request
 
 from planner_service.app.schemas import CommitRequest, CommitResponse
 from planner_service.app.mapper import payload_to_task, payload_to_subtasks
 
 from planner_v2.core.commit_engine import CommitEngine
-from planner_v2.core.calendar_adapter import CalendarAdapter
 from planner_v2.db.firestore_db import FirestoreDB
 
 from planner_v2.extensions.multi_skill.worktype_mapping import (
     build_subtasks_from_worktype
 )
 from planner_v2.core.enums import WorkType
+
 from ..core.auth import get_current_user
 from ..services.role_service import get_user_role
-from fastapi.responses import JSONResponse
-from datetime import timedelta
 
 router = APIRouter(prefix="/commit", tags=["Commit"])
+
 
 # ==================================================
 # 🔧 helpers
@@ -73,53 +76,40 @@ def apply_timeline_to_subtasks(subtasks, timeline):
         st = by_skill.get(skill_code)
 
         if not st:
+            print("❌ SKIP:", item.skill)
             continue
-       
-    st.start_date = item.start,
-    st.end_date = item.end - timedelta(days=1)
-    print(type(item.end), item.end)
 
-def build_committed_timeline(timeline):
-    
-    """
-    Format response timeline
-    """
-    return [
-        {
-            "skill": normalize_skill(item.skill),
-            "start": item.start.isoformat(),
-            "end": (item.end - timedelta(days=1)).isoformat()
-        }
-        for item in timeline
-    ]
+        print("✅ MATCH:", item.skill)
+
+        # 🔥 IMPORTANT: item.start / item.end ต้องเป็น date
+        st.start_date = item.start
+        st.end_date = item.end - timedelta(days=1)
 
 
 # ==================================================
-# 🚀 COMMIT ROUTE
+# 🚀 MAIN ROUTE
 # ==================================================
 
 @router.post("", response_model=CommitResponse)
 def commit_task(req: CommitRequest, request: Request):
+
     try:
         # --------------------------------------------------
-        # 🔐 AUTH (source of truth)
+        # 🔐 AUTH
         # --------------------------------------------------
         user = get_current_user(request)
         uid = user["uid"]
-        
+
         role = get_user_role(uid, req.hotel_id)
 
         print(f"🔥 UID = {uid}")
         print(f"🔥 HOTEL = {req.hotel_id}")
         print(f"🔥 ROLE = {role}")
 
-        
         # --------------------------------------------------
         # 1) payload → Task
         # --------------------------------------------------
         task = payload_to_task(req.task)
-
-        # ✅ trusted actor
         task.created_by = uid
 
         # --------------------------------------------------
@@ -137,45 +127,54 @@ def commit_task(req: CommitRequest, request: Request):
             )
 
         # --------------------------------------------------
-        # 3) Apply timeline (🔥 USER CHOICE, NOT AI)
+        # 3) APPLY FLOW (🔥 แยกชัด)
         # --------------------------------------------------
-        if not req.timeline:
+
+        if req.timeline:
+            # ✅ FLOW A: Timeline (AI หรือ advanced user)
+            apply_timeline_to_subtasks(subtasks, req.timeline)
+
+        elif req.preferred_start_date:
+            # ✅ FLOW B: Manual (simple user)
+            for st in subtasks:
+                start = req.preferred_start_date
+                st.start_date = start
+                st.end_date = start + timedelta(days=st.duration_days - 1)
+
+        else:
             raise HTTPException(
                 status_code=400,
-                detail="Timeline is required for commit"
+                detail="Either timeline or preferred_start_date is required"
             )
 
-        apply_timeline_to_subtasks(subtasks, req.timeline)
-
-        # sanity check
+        # --------------------------------------------------
+        # 4) Sanity Check
+        # --------------------------------------------------
         for st in subtasks:
             if st.start_date is None or st.end_date is None:
                 raise HTTPException(
                     status_code=400,
                     detail="Invalid timeline mapping"
                 )
-        
-                   
+
         # --------------------------------------------------
-        # 4) Commit to Firestore
+        # 5) Commit via Engine
         # --------------------------------------------------
         db = FirestoreDB()
-
-        committed = db.list_committed(req.hotel_id)
-        calendar = CalendarAdapter(committed)
 
         engine = CommitEngine(
             ai=None,
             firestore=db
         )
+
         policy = (req.decision_policy or "STRICT").upper()
 
         result = engine.apply_commit(
             task=task,
             subtasks=subtasks,
-            actor_uid=uid,  # ✅ real UID
-            role=role,   # 🔥 เพิ่มบรรทัดนี้
-            decision_policy=policy,  # 🔥 ใช้ค่าที่ normalize แล้ว
+            actor_uid=uid,
+            role=role,
+            decision_policy=policy,
             use_ai=req.use_ai_helper,
             hotel_id=req.hotel_id,
         )
@@ -187,22 +186,20 @@ def commit_task(req: CommitRequest, request: Request):
             )
 
         # --------------------------------------------------
-        # 5) Response
+        # 6) Response
         # --------------------------------------------------
-        committed_timeline = build_committed_timeline(req.timeline)
-
         return CommitResponse(
             task_id=result["task_id"],
             final_state="SCHEDULED",
             committed_start_date=result["committed_start"],
-            committed_timeline=result["timeline"],
-            actor=uid,  # ✅ reflect real user
+            committed_timeline=result["timeline"],  # 🔥 engine เป็น source
+            actor=uid,
             created_at=datetime.utcnow().isoformat(),
         )
 
     except HTTPException:
-        # pass through (อย่าห่อ 403/400 ให้กลายเป็น 500)
         raise
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
