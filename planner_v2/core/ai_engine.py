@@ -115,101 +115,111 @@ class AIEngine:
         return AISlot(start, chain), failed
 
     # =========================================================
-    # AI SEARCH
-    # =========================================================
-    def _search(self, subtasks: list[SubTask], base_date: date):
+# AI SEARCH
+# =========================================================
+def _search(self, subtasks: list[SubTask], base_date: date):
 
-        all_failed = []
+    all_failed = []
+    seen = set()  # 🔥 FIX: กัน duplicate
 
-        for offset in range(MAX_HORIZON):
+    for offset in range(MAX_HORIZON):
 
-            start = base_date + timedelta(days=offset)
+        start = base_date + timedelta(days=offset)
 
-            slot, failed = self._try_chain(start, subtasks)
+        slot, failed = self._try_chain(start, subtasks)
 
-            if failed:
-                all_failed.extend(failed)
+        if failed:
+            for f in failed:
+                key = (f["skill"], f["date"])
+                if key not in seen:
+                    seen.add(key)
+                    all_failed.append(f)
 
-            if slot:
-                return slot, all_failed
+        if slot:
+            return slot, all_failed
 
-        return None, all_failed
+    return None, all_failed
 
-    # =========================================================
-    # EXPLANATION HELPERS 🔥 NEW
-    # =========================================================
-    def _format_date(self, d: date):
-        return d.strftime("%B %d").replace(" 0", " ")
 
-    def _group_failed(self, failed_log):
-        grouped = defaultdict(list)
+# =========================================================
+# EXPLANATION HELPERS 🔥 NEW
+# =========================================================
+def _format_date(self, d: date):
+    return d.strftime("%B %d").replace(" 0", " ")
 
-        for f in failed_log:
-            grouped[f["skill"]].append(f["date"])
 
-        result = []
+def _group_failed(self, failed_log):
+    grouped = defaultdict(list)
 
-        for skill, dates in grouped.items():
-            dates = sorted(dates)
+    for f in failed_log:
+        grouped[f["skill"]].append(f["date"])
 
-            start = dates[0]
-            prev = dates[0]
+    result = []
 
-            for d in dates[1:]:
-                if (d - prev).days == 1:
-                    prev = d
-                else:
-                    result.append((skill, start, prev))
-                    start = d
-                    prev = d
+    for skill, dates in grouped.items():
+        dates = sorted(set(dates))  # 🔥 FIX: กันวันที่ซ้ำ
 
-            result.append((skill, start, prev))
+        start = dates[0]
+        prev = dates[0]
 
-        return result
-
-    # =========================================================
-    # EXPLANATION GENERATOR 🔥 MULTI-SKILL
-    # =========================================================
-    def _generate_explanation(self, failed_log, success_date: date):
-
-        if not failed_log:
-            return (
-                f"No workload conflict detected. "
-                f"Earliest available date is {self._format_date(success_date)}."
-            )
-
-        groups = self._group_failed(failed_log)
-
-        lines = []
-
-        for skill, start, end in groups:
-            sample = next(f for f in failed_log if f["skill"] == skill)
-            load = sample["load"]
-            max_per_day = sample["max"]
-
-            s = self._format_date(start)
-            e = self._format_date(end)
-
-            if s == e:
-                date_text = f"{s} is unavailable"
+        for d in dates[1:]:
+            if (d - prev).days == 1:
+                prev = d
             else:
-                date_text = f"{s}–{e} are unavailable"
+                result.append((skill, start, prev))
+                start = d
+                prev = d
 
-            lines.append(
-                f"{date_text} — {skill} is fully occupied "
-                f"({load}/{max_per_day} tasks per day)"
-            )
+        result.append((skill, start, prev))
 
-        lines.append(
+    return result
+
+
+# =========================================================
+# EXPLANATION GENERATOR 🔥 MULTI-SKILL
+# =========================================================
+def _generate_explanation(self, failed_log, success_date: date):
+
+    if not failed_log:
+        return (
+            f"No workload conflict detected. "
             f"Earliest available date is {self._format_date(success_date)}."
         )
 
-        explanation = "\n".join(lines)
+    groups = self._group_failed(failed_log)
 
-        print("🔥 MULTI-SKILL EXPLANATION")
-        print(explanation)
+    lines = []
 
-        return explanation
+    for skill, start, end in groups:
+        # 🔥 FIX: ไม่ใช้ sample ตัวเดียว
+        skill_data = [f for f in failed_log if f["skill"] == skill]
+
+        load = max(f["load"] for f in skill_data)
+        max_per_day = skill_data[0]["max"]
+
+        s = self._format_date(start)
+        e = self._format_date(end)
+
+        if s == e:
+            date_text = f"{s} is unavailable"
+        else:
+            date_text = f"{s}–{e} are unavailable"
+
+        lines.append(
+            f"{date_text} — {skill} is fully occupied "
+            f"({load}/{max_per_day} tasks per day)"
+        )
+
+    lines.append(
+        f"Earliest available date is {self._format_date(success_date)}."
+    )
+
+    explanation = "\n".join(lines)
+
+    print("🔥 MULTI-SKILL EXPLANATION")
+    print(explanation)
+
+    return explanation
 
     # =========================================================
     # FORMAT RESULT
