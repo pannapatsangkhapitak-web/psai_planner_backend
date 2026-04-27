@@ -10,7 +10,7 @@
 
 import os
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from google.cloud import firestore
 from google.oauth2 import service_account
 
@@ -41,37 +41,45 @@ class FirestoreDB:
     # =========================
 
     def get_user(self, hotel_id: str, uid: str):
-        doc = self.db.collection("users").document(f"{hotel_id}_{uid}").get()
+        doc = (
+            self.db
+                .collection("properties")
+                .document(hotel_id)
+                .collection("users")
+                .document(uid)
+                .get()
+            )
         return doc.to_dict() if doc.exists else None
 
     def set_user(self, hotel_id: str, uid: str, data: dict):
-        self.db.collection("users").document(f"{hotel_id}_{uid}").set(data)
+            self.db \
+                .collection("properties") \
+                .document(hotel_id) \
+                .collection("users") \
+                .document(uid) \
+                .set(data)
 
     def update_user(self, hotel_id: str, uid: str, data: dict):
-        self.db.collection("users").document(f"{hotel_id}_{uid}").set(
-            data, merge=True
-        )
+            self.db \
+                .collection("properties") \
+                .document(hotel_id) \
+                .collection("users") \
+                .document(uid) \
+                .set(data, merge=True)
 
     # =========================
     # 🧾 AUDIT / OVERRIDE LOG
     # =========================
 
-    def log_audit(self, data: dict):
+    def log_audit(self, hotel_id: str, data: dict):
         data["timestamp"] = datetime.utcnow().isoformat()
-        self.db.collection("audit_logs").add(data)
 
-    def log_override(self, data: dict):
-        # (เก็บไว้เผื่อ backward compatibility)
-        self.db.collection("override_logs").add(data)
-
-    def get_override_logs(self, hotel_id: str):
-        docs = (
-            self.db.collection("override_logs")
-            .where("hotel_id", "==", hotel_id)
-            .stream()
-        )
-        return [doc.to_dict() for doc in docs]
-
+        self.db \
+            .collection("properties") \
+            .document(hotel_id) \
+            .collection("audit_logs") \
+            .add(data)
+        
     # =========================
     # 📦 COMMITTED TASKS
     # =========================
@@ -148,18 +156,24 @@ class FirestoreDB:
     # 📦 MOVE TO ARCHIVE (REMOVE + ARCHIVE)
     # =========================
 
-    def move_to_archive(self, tasks, hotel_id):
+    def move_to_archive(self, tasks, hotel_id, user_id):
         for task in tasks:
             task_id = task.get("task_id")
 
-            # 1) เก็บลง archive
-            self.db \
+            task["archived_by"] = user_id
+            task["archived_at"] = datetime.now(timezone.utc).isoformat()
+
+            archive_ref = self.db \
                 .collection("properties") \
                 .document(hotel_id) \
                 .collection("tasks_archive") \
                 .document(task_id) \
                 .set(task)
-
+            if archive_ref.get().exists:
+                raise Exception(f"Archive already exists for task {task_id}")
+            
+            archive_ref.set(task)
+                    
             # 2) ลบจาก committed
             self.db \
                 .collection("properties") \

@@ -82,7 +82,7 @@ class CommitEngine:
                     }
 
             # 🔴 ทำ override ตรงนี้เท่านั้น
-            self.db.move_to_archive(conflict_tasks, hotel_id)
+            self.db.move_to_archive(conflict_tasks, hotel_id, actor_uid)
 
             self.db.log_audit({
                 "action": "OVERRIDE",
