@@ -78,6 +78,6 @@ def root():
 # =========================
 # Planner/Archive
 # =========================
-from app.routes import planner
+from planner_service.app.routes import planner
 
 app.include_router(planner.router)
