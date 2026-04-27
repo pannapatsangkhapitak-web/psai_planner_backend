@@ -1,3 +1,3 @@
-from planner_v2.db.firestore_db import FirestoreDB
+from google.cloud import firestore
 
-db = FirestoreDB().client
+db = firestore.Client()
