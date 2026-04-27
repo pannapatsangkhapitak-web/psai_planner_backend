@@ -158,24 +158,30 @@ class FirestoreDB:
     # =========================
     # 📦 MOVE TO ARCHIVE (REMOVE + ARCHIVE)
     # =========================
-
+    
     def move_to_archive(self, tasks, hotel_id, user_id):
         for task in tasks:
             task_id = task.get("task_id")
 
-            task["archived_by"] = user_id
-            task["archived_at"] = datetime.now(timezone.utc).isoformat()
-
-            archive_ref = self.db \
+            doc_ref = self.db \
                 .collection("properties") \
                 .document(hotel_id) \
                 .collection("tasks_archive") \
-                .document(task_id) \
-                .set(task)
-            if archive_ref.get().exists:
+                .document(task_id)
+
+            # ✅ check ก่อนเขียน
+            if doc_ref.get().exists:
                 raise Exception(f"Archive already exists for task {task_id}")
-            
-            archive_ref.set(task)
+
+            # ✅ สร้าง data ใหม่ (สำคัญ)
+            archive_data = {
+                **task,
+                "archived_by": user_id,
+                "archived_at": datetime.now(timezone.utc).isoformat()
+            }
+
+            # ✅ เขียนครั้งเดียว
+            doc_ref.set(archive_data)
                     
             # 2) ลบจาก committed
             self.db \
