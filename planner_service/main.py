@@ -57,6 +57,7 @@ from planner_service.app.routes import commit_routes
 from planner_service.app.routes import ai_routes
 from planner_service.app.routes import user_routes
 from planner_service.app.routes import config_routes
+from planner_service.app.routes import planner
 
 # =========================
 # INCLUDE ROUTERS
@@ -67,7 +68,8 @@ app.include_router(commit_routes.router)
 
 # 🔥 CONFIG (สำคัญ)
 app.include_router(config_routes.router, prefix="/config")
-
+# Planner/Archive
+app.include_router(planner.router)
 # =========================
 # ROOT
 # =========================
@@ -75,9 +77,4 @@ app.include_router(config_routes.router, prefix="/config")
 def root():
     return {"message": "PSAI Planner Backend Running"}
 
-# =========================
-# Planner/Archive
-# =========================
-from planner_service.app.routes import planner
 
-app.include_router(planner.router)
