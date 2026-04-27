@@ -74,3 +74,9 @@ app.include_router(config_routes.router, prefix="/config")
 @app.get("/")
 def root():
     return {"message": "PSAI Planner Backend Running"}
+
+# =========================
+# Planner/Archive
+# =========================
+from routers import planner
+app.include_router(planner.router)
