@@ -63,9 +63,10 @@ class CommitEngine:
             subtasks=subtasks_sorted,
             hotel_id=hotel_id
         )
-
+           
         if conflict_tasks:
-
+            print("conflict_tasks:", conflict_tasks) 
+            
             if decision_policy == "STRICT":
                 return {
                     "success": False,
@@ -77,8 +78,8 @@ class CommitEngine:
             if decision_policy == "OVERRIDE":
                 if role != "MASTER":
                     return {
-                "success": False,
-                "reason": "OVERRIDE_NOT_ALLOWED"
+                    "success": False,
+                    "reason": "OVERRIDE_NOT_ALLOWED"
                     }
 
             # 🔴 ทำ override ตรงนี้เท่านั้น

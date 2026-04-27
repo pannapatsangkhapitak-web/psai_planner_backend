@@ -136,13 +136,17 @@ class FirestoreDB:
             for task in existing_tasks:
                 for t in task.get("subtasks", []):
 
-                    same_skill = t["skill"] == st.skill.name
-
+                    same_skill = str(t.get("skill", "")).upper() == str(st.skill.name).upper()
+                                                       
                 try:
                     start = date.fromisoformat(t["start"])
                     end = date.fromisoformat(t["end"])
                 except Exception:
                     continue
+                
+                print("---- DEBUG CONFLICT ----")
+                print("NEW:", st.skill.name, st.start_date, st.end_date)
+                print("OLD:", t.get("skill"), t.get("start"), t.get("end"))
                 
                 overlap = not (
                         st.end_date < start or
