@@ -138,15 +138,18 @@ class FirestoreDB:
 
                     same_skill = t["skill"] == st.skill.name
 
+                try:
                     start = date.fromisoformat(t["start"])
                     end = date.fromisoformat(t["end"])
-
-                    overlap = not (
+                except Exception:
+                    continue
+                
+                overlap = not (
                         st.end_date < start or
                         st.start_date > end
                     )
 
-                    if same_skill and overlap:
+                if same_skill and overlap:
                         conflicts.append(task)
                         break
 
