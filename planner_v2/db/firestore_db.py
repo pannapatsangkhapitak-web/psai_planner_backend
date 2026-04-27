@@ -143,10 +143,7 @@ class FirestoreDB:
                     end = date.fromisoformat(t["end"])
                 except Exception:
                     continue
-                
-                print("---- DEBUG CONFLICT ----")
-                print("NEW:", st.skill.name, st.start_date, st.end_date)
-                print("OLD:", t.get("skill"), t.get("start"), t.get("end"))
+                               
                 
                 overlap = not (
                         st.end_date < start or
@@ -154,8 +151,11 @@ class FirestoreDB:
                     )
 
                 if same_skill and overlap:
-                        conflicts.append(task)
-                        break
+                    print("---- DEBUG CONFLICT ----")
+                    print("NEW:", st.skill.name, st.start_date, st.end_date)
+                    print("OLD:", t.get("skill"), t.get("start"), t.get("end"))
+                    conflicts.append(task)
+                    break
 
         return conflicts
 
