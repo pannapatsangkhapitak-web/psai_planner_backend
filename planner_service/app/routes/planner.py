@@ -1,6 +1,6 @@
 from planner_v2.db.firestore_db import FirestoreDB
 
-db = FirestoreDB().get_db()   # หรือ method ที่คุณมีจริง
+db = FirestoreDB().db
 
 @router.get("/{hotel_id}/archive")
 def get_archive(hotel_id: str):
@@ -10,6 +10,4 @@ def get_archive(hotel_id: str):
         .where("action", "==", "ARCHIVED") \
         .stream()
 
-    result = [doc.to_dict() for doc in logs]
-
-    return {"items": result}
+    return {"items": [doc.to_dict() for doc in logs]}
