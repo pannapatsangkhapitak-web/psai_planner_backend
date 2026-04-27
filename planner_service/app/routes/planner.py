@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.core.db import db
+from planner_service.app.core.db import db
 
 router = APIRouter()
 
