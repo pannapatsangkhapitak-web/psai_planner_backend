@@ -1,7 +1,6 @@
-from fastapi import APIRouter
-from planner_service.app.core.db import db
+from planner_v2.db.firestore_db import FirestoreDB
 
-router = APIRouter()
+db = FirestoreDB().get_db()   # หรือ method ที่คุณมีจริง
 
 @router.get("/{hotel_id}/archive")
 def get_archive(hotel_id: str):
@@ -11,9 +10,6 @@ def get_archive(hotel_id: str):
         .where("action", "==", "ARCHIVED") \
         .stream()
 
-    result = []
-
-    for doc in logs:
-        result.append(doc.to_dict())
+    result = [doc.to_dict() for doc in logs]
 
     return {"items": result}
