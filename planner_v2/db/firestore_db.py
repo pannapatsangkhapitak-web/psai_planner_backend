@@ -133,11 +133,16 @@ class FirestoreDB:
         conflicts = []
 
         for task in existing_tasks:
-
+            # 🔥 ใส่ตรงนี้ (ก่อนเข้า loop ลึก)
+            print("\n===== CHECK TASK =====")
+            print("TASK:", task.get("task_name"))        
+           
             task_has_conflict = False
 
             for t in task.get("subtasks", []):
-
+                # 🔥 log OLD
+                print("OLD:", t.get("skill"), t.get("start"), t.get("end"))    
+                
                 try:
                     start = date.fromisoformat(t["start"])
                     end = date.fromisoformat(t["end"])
@@ -146,6 +151,9 @@ class FirestoreDB:
 
                 for st in subtasks:
 
+                    # 🔥 log NEW (ต้องอยู่ใน loop นี้)
+                    print ("NEW:", st.skill.name, st.start_date, st.end_date)
+                    
                     same_skill = (
                         str(t.get("skill", "")).upper() ==
                         str(st.skill.name).upper()
@@ -155,7 +163,8 @@ class FirestoreDB:
                         st.end_date < start or
                         st.start_date > end
                     )
-
+                    print("→ same_skill:", same_skill, "| overlap:", overlap)
+                          
                     if same_skill and overlap:
                         task_has_conflict = True
                         break  # break st loop
