@@ -66,6 +66,8 @@ class CommitEngine:
            
         if conflict_tasks:
             print("conflict_tasks:", conflict_tasks) 
+            print("DECISION POLICY:", decision_policy)
+            print("ROLE:", role)
             
             if decision_policy == "STRICT":
                 return {
