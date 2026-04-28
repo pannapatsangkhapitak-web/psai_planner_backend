@@ -81,25 +81,26 @@ class CommitEngine:
                     "success": False,
                     "reason": "OVERRIDE_NOT_ALLOWED"
                     }
+                print("ENTER OVERRIDE FLOW")
+                
+                # 🔴 ทำ override ตรงนี้เท่านั้น
+                self.db.move_to_archive(conflict_tasks, hotel_id, actor_uid)
 
-            # 🔴 ทำ override ตรงนี้เท่านั้น
-            self.db.move_to_archive(conflict_tasks, hotel_id, actor_uid)
-
-            self.db.log_audit(
-                hotel_id,
-                        {
-                        "action": "OVERRIDE",
-                        "actor": actor_uid,
-                        "affected_tasks": [t["task_id"] for t in conflict_tasks],
-                        "new_task": task.task_id,
-                        }
-            )
+                self.db.log_audit(
+                    hotel_id,
+                            {
+                            "action": "OVERRIDE",
+                            "actor": actor_uid,
+                            "affected_tasks": [t["task_id"] for t in conflict_tasks],
+                            "new_task": task.task_id,
+                            }
+                )
             
-            if decision_policy not in ["STRICT", "OVERRIDE"]:
-                return {
-                    "success": False,
-                    "reason": "INVALID_POLICY"
-                }
+                if decision_policy not in ["STRICT", "OVERRIDE"]:
+                    return {
+                        "success": False,
+                        "reason": "INVALID_POLICY"
+                    }
                 
         # --------------------------------------------
         # 5) Persist new task
