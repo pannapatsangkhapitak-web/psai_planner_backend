@@ -132,33 +132,46 @@ class FirestoreDB:
         existing_tasks = self.list_committed(hotel_id)
         conflicts = []
 
-        for st in subtasks:
-            for task in existing_tasks:
-                for t in task.get("subtasks", []):
+        for task in existing_tasks:
 
-                    same_skill = str(t.get("skill", "")).upper() == str(st.skill.name).upper()
-                                                       
+            task_has_conflict = False
+
+            for t in task.get("subtasks", []):
+
                 try:
                     start = date.fromisoformat(t["start"])
                     end = date.fromisoformat(t["end"])
-                except Exception:
+                except:
                     continue
-                               
-                
-                overlap = not (
+
+                for st in subtasks:
+
+                    same_skill = (
+                        str(t.get("skill", "")).upper() ==
+                        str(st.skill.name).upper()
+                    )
+
+                    overlap = not (
                         st.end_date < start or
                         st.start_date > end
                     )
 
-                if same_skill and overlap:
-                    print("---- DEBUG CONFLICT ----")
-                    print("NEW:", st.skill.name, st.start_date, st.end_date)
-                    print("OLD:", t.get("skill"), t.get("start"), t.get("end"))
-                    conflicts.append(task)
-                    break
+                    if same_skill and overlap:
+                        task_has_conflict = True
+                        break  # break st loop
+
+                if task_has_conflict:
+                    break  # break t loop
+
+            if task_has_conflict:
+                conflicts.append(task)
+
+        # กันซ้ำ
+        conflicts = list({t["task_id"]: t for t in conflicts}.values())
 
         return conflicts
 
+ 
     # =========================
     # 📦 MOVE TO ARCHIVE (REMOVE + ARCHIVE)
     # =========================
