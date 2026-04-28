@@ -83,9 +83,10 @@ def apply_timeline_to_subtasks(subtasks, timeline):
 
         # 🔥 IMPORTANT: item.start / item.end ต้องเป็น date
         st.start_date = item.start
-        st.end_date = item.end - timedelta(days=1)
+        st.end_date = item.end
 
-
+        if st.start_date > st.end_date:
+            raise Exception("INVALID_DATE_RANGE")
 # ==================================================
 # 🚀 MAIN ROUTE
 # ==================================================
