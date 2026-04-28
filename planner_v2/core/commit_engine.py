@@ -75,14 +75,17 @@ class CommitEngine:
                     "conflict": True,
                     "requires_override": True if role == "MASTER" else False,
                     "conflict_tasks": conflict_tasks,
+                    "reason": "CONFLICT_NOT_ALLOWED"
                 }
 
             if decision_policy == "OVERRIDE":
                 if role != "MASTER":
                     return {
                     "success": False,
+                    "error_type": "PERMISSION",
                     "reason": "OVERRIDE_NOT_ALLOWED"
                     }
+                
                 print("ENTER OVERRIDE FLOW")
                 
                 # 🔴 ทำ override ตรงนี้เท่านั้น
