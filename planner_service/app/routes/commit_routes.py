@@ -141,7 +141,8 @@ def commit_task(req: CommitRequest, request: Request):
                 start = req.preferred_start_date
                 st.start_date = start
                 st.end_date = start + timedelta(days=st.duration_days - 1)
-
+                print("start date = st.start_date")
+                print("End date = st.end_date")
         else:
             raise HTTPException(
                 status_code=400,
