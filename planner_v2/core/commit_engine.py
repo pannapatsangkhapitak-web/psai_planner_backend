@@ -28,6 +28,15 @@ class CommitEngine:
         hotel_id: str,
     ):
         # --------------------------------------------
+        # 🔥 VALIDATION ก่อนทุกอย่าง
+        # --------------------------------------------
+        if decision_policy not in ["STRICT", "OVERRIDE"]:
+            return {
+                "success": False,
+                "reason": "INVALID_POLICY"
+            }
+
+        # --------------------------------------------
         # 1) Validate timeline
         # --------------------------------------------
         for st in subtasks:
@@ -63,12 +72,12 @@ class CommitEngine:
             subtasks=subtasks_sorted,
             hotel_id=hotel_id
         )
-           
+
         if conflict_tasks:
-            print("conflict_tasks:", conflict_tasks) 
+            print("conflict_tasks:", conflict_tasks)
             print("DECISION POLICY:", decision_policy)
             print("ROLE:", role)
-            
+
             if decision_policy == "STRICT":
                 return {
                     "success": False,
@@ -81,32 +90,41 @@ class CommitEngine:
             if decision_policy == "OVERRIDE":
                 if role != "MASTER":
                     return {
-                    "success": False,
-                    "error_type": "PERMISSION",
-                    "reason": "OVERRIDE_NOT_ALLOWED"
+                        "success": False,
+                        "error_type": "PERMISSION",
+                        "reason": "OVERRIDE_NOT_ALLOWED"
                     }
-                
+
                 print("ENTER OVERRIDE FLOW")
-                
+
                 # 🔴 ทำ override ตรงนี้เท่านั้น
                 self.db.move_to_archive(conflict_tasks, hotel_id, actor_uid)
 
                 self.db.log_audit(
                     hotel_id,
-                            {
-                            "action": "OVERRIDE",
-                            "actor": actor_uid,
-                            "affected_tasks": [t["task_id"] for t in conflict_tasks],
-                            "new_task": task.task_id,
-                            }
-                )
-            
-                if decision_policy not in ["STRICT", "OVERRIDE"]:
-                    return {
-                        "success": False,
-                        "reason": "INVALID_POLICY"
+                    {
+                        "action": "OVERRIDE",
+                        "actor": actor_uid,
+                        "affected_tasks": [t["task_id"] for t in conflict_tasks],
+                        "new_task": task.task_id,
                     }
-                
+                )
+
+                # 🔥 FIX: commit + return ทันที (ไม่ปล่อย flow หลุด)
+                task_id = self.db.commit_chain(
+                    task=task,
+                    subtasks=subtasks_sorted,
+                    actor=actor_uid,
+                    hotel_id=hotel_id,
+                )
+
+                return {
+                    "success": True,
+                    "task_id": task_id,
+                    "committed_start": committed_start,
+                    "timeline": timeline,
+                }
+
         # --------------------------------------------
         # 5) Persist new task
         # --------------------------------------------
