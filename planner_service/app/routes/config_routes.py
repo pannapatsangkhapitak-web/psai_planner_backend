@@ -128,7 +128,7 @@ def update_config(
             "hotel_name": data["hotel_name"],
             "address": data["address"],
             "contact_email": data["contact_email"],
-            "modules": data["modules"],
+            "enabled_modules": data["enabled_modules"],
         },
         merge=True
     )
