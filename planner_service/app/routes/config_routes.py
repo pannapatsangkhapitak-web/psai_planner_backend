@@ -96,7 +96,7 @@ class ConfigUpdateRequest(BaseModel):
     hotel_name: str
     address: str
     contact_email: str
-    modules: List[str]
+    enabled_modules: List[str]
     users: List[ConfigUserItem]
 
 
