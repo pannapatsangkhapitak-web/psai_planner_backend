@@ -8,9 +8,8 @@
 # =========================================================
 
 from fastapi import APIRouter, Header, HTTPException
-from typing import List
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
-
 from firebase_admin import auth, firestore
 
 # 🔥 ใช้ Firestore client จริง
@@ -81,7 +80,7 @@ def get_config(authorization: str = Header(...)):
         "role": decoded["role"],
         "email": decoded["email"],
     }
-
+    
 # =========================================================
 # 📦 SCHEMA
 # =========================================================
@@ -91,6 +90,7 @@ class ConfigUserItem(BaseModel):
     last_name: str
     role: str
 
+from pydantic import Field
 
 class ConfigUpdateRequest(BaseModel):
     hotel_name: str
@@ -98,12 +98,12 @@ class ConfigUpdateRequest(BaseModel):
     contact_email: str
     enabled_modules: List[str]
     users: List[ConfigUserItem]
-
+    meters: List[Dict[str, Any]] = Field(default_factory=list)
 
 # =========================================================
 # 📤 UPDATE CONFIG (SYS ADMIN ONLY)
 # =========================================================
-@router.put("/{hotel_id}/")
+@router.put ("/{hotel_id}/")
 def update_config(
     hotel_id: str,
     request: ConfigUpdateRequest,
@@ -129,10 +129,11 @@ def update_config(
             "address": data["address"],
             "contact_email": data["contact_email"],
             "enabled_modules": data["enabled_modules"],
+            "meters": data.get("meters", []),  # 🔥 ADD THIS
         },
         merge=True
     )
-
+    print("🔥 SAVED TO FIRESTORE:", data.get("meters"))
     users_ref = db.collection("properties").document(hotel_id).collection("users")
 
     # -----------------------------
@@ -184,3 +185,22 @@ def update_config(
         users_ref.document(uid).delete()
 
     return {"message": "config updated"}
+
+# -----------------------------
+# Get config
+# -----------------------------
+
+@router.get("/{hotel_id}")
+def get_config_by_hotel(hotel_id: str, authorization: str = Header(...)):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing Bearer token")
+
+    token = authorization.replace("Bearer ", "")
+    verify_sys_admin(token)
+
+    doc = db.collection("properties").document(hotel_id).get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Config not found")
+
+    return doc.to_dict()
